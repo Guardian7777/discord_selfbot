@@ -600,6 +600,7 @@ async def trophies_graph(ctx, *, player_tag):
     battle_log = get_battle_log(player_tag)
     
     if player_data and battle_log:
+        player_name = player_data['name']
         trophies = []
         timestamps = []
         
@@ -621,7 +622,7 @@ async def trophies_graph(ctx, *, player_tag):
         # 그래프 생성
         plt.figure(figsize=(10, 6))
         plt.plot(timestamps, trophies, marker='o', linestyle='-', color='b')
-        plt.title('브롤스타즈 총 트로피 변동', fontproperties=font_prop)
+        plt.title(f'{player_name}의 총 트로피 변동', fontproperties=font_prop)
         plt.xlabel('시간', fontproperties=font_prop)
         plt.ylabel('총 트로피', fontproperties=font_prop)
         plt.grid(True)
@@ -663,6 +664,7 @@ async def trophies_graph(ctx):
     battle_log = get_battle_log(player_tag)
     
     if player_data and battle_log:
+        player_name = player_data['name']
         trophies = []
         timestamps = []
         
@@ -684,7 +686,7 @@ async def trophies_graph(ctx):
         # 그래프 생성
         plt.figure(figsize=(10, 6))
         plt.plot(timestamps, trophies, marker='o', linestyle='-', color='b')
-        plt.title('브롤스타즈 총 트로피 변동', fontproperties=font_prop)
+        plt.title(f'{player_name} 총 트로피 변동', fontproperties=font_prop)
         plt.xlabel('시간', fontproperties=font_prop)
         plt.ylabel('총 트로피', fontproperties=font_prop)
         plt.grid(True)
@@ -696,7 +698,7 @@ async def trophies_graph(ctx):
         plt.savefig(graph_filename)
         plt.close()
         
-        # Discord에 그래프 이미지 전송
+        # 그래프 이미지 전송
         with open(graph_filename, 'rb') as f:
             file = discord.File(f)
             await ctx.reply(file=file)
