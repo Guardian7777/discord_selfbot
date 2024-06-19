@@ -14,6 +14,7 @@ import matplotlib.font_manager as fm
 from datetime import datetime
 import pytz
 import openai
+from googlesearch import search
 
 CONFIG = r"콘픽경로" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈셈
 
@@ -311,6 +312,22 @@ async def gpt(ctx, *, prompt: str):
     
     except Exception as e:
         await ctx.send(f"오류가 발생했습니다: {e}")
+
+# 구글 검색 명령어 정의
+@bot.command(name='구글')
+async def google_search(ctx, *, query: str):
+    try:
+        # 구글에서 검색 결과 가져오기 (첫 번째 결과만 사용) 한국어 잘 인식못하니까 영어로 하는거 추천
+        search_results = list(search(query, num_results=1, lang='ko-KR'))
+
+        if search_results:
+            # 검색 결과 링크 출력
+            await ctx.reply(f"가장 관련성이 높은 검색 결과: {search_results[0]}")
+        else:
+            await ctx.reply("검색 결과를 찾을 수 없습니다.")
+
+    except Exception as e:
+        await ctx.reply(f"오류가 발생했습니다: {e}")
 
 # 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
 @bot.command()
