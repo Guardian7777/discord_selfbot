@@ -441,7 +441,34 @@ async def player_detail_info(ctx):
             f'트로피: {trophies}\n'
             f'최고 트로피: {best_trophies}\n'
             f'3vs3 모드 승리: {three_vs_three_wins}\n'
-            f'솔로 모그'
+            f'솔로 모드 승리: {solo_victories}\n'
+            f'듀오 모드 승리: {duo_victories}\n'
+        )
+
+        await ctx.reply(message)
+    else:
+        await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
+
+@bot.command(name='레벨')
+async def brawler_levels(ctx, *, player_tag):
+    player_tag = urllib.parse.quote(player_tag)
+    player_data = get_player_detail_info(player_tag)
+    if player_data:
+        brawlers = player_data.get('brawlers', [])
+        sorted_brawlers = sorted(brawlers, key=lambda x: x['power'], reverse=True)  # 레벨 높은 순으로 정렬
+        message = '## 브롤러별 레벨\n'
+        for brawler in sorted_brawlers:
+            name = brawler['name']
+            power = brawler['power']
+            korean_name = brawler_name_mapping.get(name, name)
+            message += f'> **{korean_name} - {power} 레벨**\n'
+        await ctx.reply(message)
+    else:
+        await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
+
+@bot.command(name='내레벨')
+async def brawler_levels(ctx):
+    player_tag = TAG
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     if player_data:
