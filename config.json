@@ -5,5 +5,5 @@
     "url": "https://api.brawlstars.com/v1",
     "activity": "\ud14c\uc2a4\ud2b8",
     "tag": "#본인태그",
-    "openai.api_key": "#"
+    "openai.api_key": ""
 }
