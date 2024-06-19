@@ -39,6 +39,210 @@ bot = commands.Bot(command_prefix=config["prefix"], self_bot=True, intents=inten
 async def on_ready():
     print(f'Logged in as {bot.user}')
 
+@bot.command()
+async def ping(ctx):
+    await ctx.send('Pong!')
+
+@bot.command()
+async def 도움말(ctx):
+    message = (
+        "## 도움말\n"
+        f"> **1️⃣ 채팅: 채팅을 하려면 {prefix}채팅을 입력하세요**\n"
+        f"> **2️⃣ 도구: 도구를 보려면 {prefix}도구를 입력하세요**\n"
+        f"> **3️⃣ 브롤: 브롤 관련 메뉴를 보려면 {prefix}브롤을 입력하세요**\n"
+        f"> **4️⃣ 코인: 코인 관련 메뉴를 보려면 {prefix}코인을 입력하세요**\n"
+        f"> **5️⃣ 설정: 설정을 변경하려면 {prefix}설정을 입력하세요**\n"
+    )
+    await ctx.reply(message)
+
+# 본인 메시지 관리 기능, 밈 보내기 기능 있음 원하는 밈 디코로 보내주면 추가함
+@bot.command()
+async def 채팅(ctx):
+    message = (
+        "## 채팅 메뉴\n"
+        f"> **1️⃣ 도배: 도배를 하려면 {prefix}도배 갯수 내용 을 입력하세요**\n"
+        f"> **2️⃣ 청소: 청소를 하려면 {prefix}청소 갯수 를 입력하세요**\n"
+        f"> **3️⃣ 릭롤: {prefix}릭롤**\n"
+    )
+    await ctx.reply(message)
+
+@bot.command()
+async def 도배(ctx, count: int, *, message: str):
+    if message.strip() == "":
+        await ctx.reply("빈 메시지는 보낼 수 없어요!")
+        return
+    for _ in range(count):
+        await ctx.send(message)
+
+@bot.command()
+async def 청소(ctx, count: int):
+    if isinstance(ctx.channel, discord.DMChannel):
+        async for message in ctx.channel.history(limit=count+1):
+            if message.author == ctx.author:
+                await message.delete()
+        await ctx.send(f"{count}개의 메시지를 삭제했습니다.")
+        return
+
+    deleted_messages = await ctx.channel.purge(limit=count+1, check=lambda m: m.author == ctx.author)
+    deleted_count = len(deleted_messages) - 1
+    await ctx.send(f"{deleted_count}개의 메시지를 삭제했습니다.", delete_after=5)
+
+@bot.command()
+async def 릭롤(ctx):
+    await ctx.send('https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713')
+
+# 각종 도구
+@bot.command()
+async def 도구(ctx):
+    message = (
+        "## 도구 메뉴\n"
+        f"> **1️⃣ 관리: 서버 관리 기능을 이용하려면 {prefix}관리 를 입력하세요**\n"
+        f"> **2️⃣ ip: 아이피 기능을 이용하려면 {prefix}ip ip주소 를 입력하세요**\n"
+        f"> **3️⃣ 통조림자충: 냥코 통조림 충전을 하려면 {prefix}통조림자충 <이어하기코드> <인증번호> <통조림>을 입력하세요**\n"
+    )
+    await ctx.reply(message)
+
+# 서버에서 관리자 권한 있을 경우에만 사용 가능함
+@bot.command()
+async def 관리(ctx):
+    if ctx.guild is None:
+        await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
+        return
+
+    # 관리자 권한 확인
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.reply("서버 관리 기능을 사용하기 위해서는 관리자 권한이 필요합니다.")
+        return
+
+    message = (
+        "## 서버관리자 전용\n"
+        f"> **1️⃣ 밴: 밴하려면 {prefix}밴 유저멘션 을 입력하세요**\n"
+        f"> **2️⃣ 추방: 추방하려면 {prefix}추방 유저멘션 을 입력하세요**\n"
+        f"> **3️⃣ 별명: 별명을 변경하려면 {prefix}별명 유저멘션 새별명 을 입력하세요**\n"
+    )
+    await ctx.reply(message)
+
+@bot.command()
+async def 밴(ctx, member: discord.Member):
+    if ctx.guild is None:
+        await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
+        return
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.reply("이 명령어를 사용하기 위해서는 관리자 권한이 필요합니다.")
+        return
+    await member.ban()
+    await ctx.reply(f"{member}님을 밴했습니다.")
+
+@bot.command()
+async def 추방(ctx, member: discord.Member):
+    if ctx.guild is None:
+        await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
+        return
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.reply("이 명령어를 사용하기 위해서는 관리자 권한이 필요합니다.")
+        return
+    await member.kick()
+    await ctx.reply(f"{member}님을 추방했습니다.")
+
+@bot.command()
+async def 별명(ctx, member: discord.Member, nickname: str):
+    if ctx.guild is None:
+        await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
+        return
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.reply("이 명령어를 사용하기 위해서는 관리자 권한이 필요합니다.")
+        return
+    await member.edit(nick=nickname)
+    await ctx.reply(f"{member}님의 별명을 {nickname}로 변경했습니다.")
+
+# ip 확인
+@bot.command()
+async def ip(ctx, address: str):
+    try:
+        response = requests.get(f'http://ip-api.com/json/{address}')
+        data = response.json()
+
+        if data.get('status') == 'success':
+            ip_address = f"> **IP 주소: {data['query']}**"
+            country = f"> **나라: {data['country']}**"
+            city = f"> **도시: {data['city']}**"
+            zip_code = f"> **우편번호: {data['zip']}**"
+            isp = f"> **ISP: {data['isp']}**"
+            map = f"> **지도: [클릭하여 구글지도로 이동하기](https://google.com/maps/place/{address})**"
+
+            message = f"## IP 정보\n{ip_address}\n{country}\n{city}\n{zip_code}\n{isp}\n{map}"
+
+            await ctx.send(message)
+        else:
+            await ctx.send("주소에 대한 정보를 찾을 수 없습니다.")
+    except Exception as e:
+        await ctx.send(f"IP 조회 중 오류가 발생했습니다: {e}")
+
+# 자충봇 될지 모르겠음
+@bot.command()
+async def 통조림자충(ctx, 이어하기코드, 인증번호, 통조림):
+    if not 이어하기코드 or not 인증번호 or not 통조림:
+        await ctx.reply(f"올바른 양식을 사용해주세요. 사용법: {bot.command_prefix}통조림자충 <이어하기코드> <인증번호> <통조림>")
+        return
+
+    try:
+        with open("config.json", "r") as config_file:
+            config = json.load(config_file)
+            webhook_url = config.get('webhook')  # config에서 웹훅 주소 받아오기
+            if not webhook_url:
+                await ctx.reply("config 파일에서 올바른 웹훅 주소를 설정해주세요.")
+                return
+            await ctx.message.edit(content="**작업을 시작합니다.**")
+            webhook_obj = discord.Webhook.from_url(webhook_url, adapter=discord.RequestsWebhookAdapter())
+            tc = 이어하기코드
+            cc = 인증번호
+            country = 'kr'
+            gv = config['version']
+            cf = int(통조림)
+            
+            downloadfile(tc, cc, country, gv)
+            time.sleep(0.1)
+            save_stats["cat_food"]["Value"] = cf
+            time.sleep(0.1)
+            processes = []
+            placeholder = (
+            "Main Dev : CintagramABP\n"
+            "Dev : kimchaewon_cute\n"
+            )
+            if os.path.exists("account.txt"):
+                os.remove("account.txt")
+            open("account.txt", "w+", encoding="utf-8").write(placeholder)
+            uploadsave()
+            await ctx.message.edit(content="**작업을 시작합니다.**\n**계정이 업로드 되었습니다.**")
+            with open("account.txt", "r") as f:
+                output_text = f.read()
+            time.sleep(0.5)
+            webhook_obj.send(f"작업 완료되었습니다. \n```{output_text}```")
+            await ctx.message.edit(content="**작업을 시작합니다.**\n**계정이 업로드 되었습니다.**\n**작업이 완료되었습니다. 웹훅을 확인해주세요!**")
+
+    except TypeError as e:
+        await ctx.reply(f"에러발생 {e}")
+    except Exception as e:
+        await ctx.reply("작업중 오류가 발생하였습니다.(잘못된 기기변경코드 및 통조림 갯수 초과)")
+        if webhook_url:
+            webhook_obj = discord.Webhook.from_url(webhook_url, adapter=discord.RequestsWebhookAdapter())
+            webhook_obj.send(f"작업중 오류가 발생하였습니다.{e}")
+
+# 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
+@bot.command()
+async def 브롤(ctx):
+    message = (
+        "## 브롤스타즈 API : 내 계정을 확인하려면 명령어 앞에 내 를 입력하세요\n"
+        f"> **1️⃣ 정보: 기본적인 정보를 보려면 {prefix}정보 #플레이어 태그 를 입력하세요**\n"
+        f"> **2️⃣ 전적: 전적을 확인하려면 {prefix}전적 #플레이어 태그를 입력하세요**\n"
+        f"> **3️⃣ 랭크: 브롤러 랭크를 보려면 {prefix}랭크 #플레이어 태그를 입력하세요**\n"
+        f"> **4️⃣ 트로피: 브롤러 트로피를 보려면 {prefix}트로피 #플레이어 태그 입력하세요**\n"
+        f"> **5️⃣ 최트: 브롤러의 최트, 현트를 보려면 {prefix}최트 #플레이어 태그를 입력하세요**\n"
+        f"> **6️⃣ 그래프: 트로피 등락폭을 보려면 {prefix}그래프 #플레이어 태그를 입력하세요**\n"
+        f"> **7️⃣ 추천: 브롤러 추천을 받으시려면 {prefix}추천을 입력하세요**\n"
+    )
+    await ctx.reply(message)
+
 # 브롤스타즈 API 요청
 def get_player_info(player_tag):
     url = f'{URL}/players/{player_tag}'
@@ -60,7 +264,7 @@ def get_player_detail_info(player_tag):
         return None
 
 # 한글 폰트 설정
-font_path = r"폰트 경로 지정" # 아이폰 쓰면 앞에 한거처럼 ㄱㄱㄱ
+font_path = r"폰트 경로 지정" # 아이폰 쓰면 앞에 한거처럼 ㄱㄱ
 font_prop = fm.FontProperties(fname=font_path)
 plt.rcParams['font.family'] = font_prop.get_name()
 
@@ -177,7 +381,7 @@ async def player_info(ctx, player_tag):
 # 할때마다 태그 넣기 귀찮아서 만듦
 @bot.command(name='내정보')
 async def player_info(ctx):
-    player_tag = '#본인태그'
+    player_tag = TAG
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_info(player_tag)
     if player_data:
@@ -218,7 +422,7 @@ async def player_detail_info(ctx, *, player_tag):
 
 @bot.command(name='내전적')
 async def player_detail_info(ctx):
-    player_tag = '#본인태그'
+    player_tag = TAG
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     if player_data:
@@ -272,7 +476,7 @@ async def brawler_ranks(ctx, *, player_tag):
 
 @bot.command(name='내랭크')
 async def brawler_ranks(ctx):
-    player_tag = '#본인태그'
+    player_tag = TAG
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     if player_data:
@@ -308,7 +512,7 @@ async def brawler_trophies(ctx, *, player_tag):
 
 @bot.command(name='내트로피')
 async def brawler_trophies(ctx):
-    player_tag = '#본인태그'
+    player_tag = TAG
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     if player_data:
@@ -344,7 +548,7 @@ async def brawler_masteries(ctx, *, player_tag):
 
 @bot.command(name='내최트')
 async def brawler_masteries(ctx):
-    player_tag = '#LG9VGQGR'
+    player_tag = TAG
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     if player_data:
@@ -426,7 +630,7 @@ def get_brawlers():
     
 @bot.command(name='내그래프')
 async def trophies_graph(ctx):
-    player_tag = '#본인태그'
+    player_tag = TAG
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     battle_log = get_battle_log(player_tag)
@@ -487,7 +691,7 @@ def get_brawlers():
         print(f'Failed to fetch brawlers. Status code: {response.status_code}')
         return None
 
-@bot.command(name='랜덤브롤러')
+@bot.command(name='추천')
 async def random_brawler(ctx):
     brawlers = get_brawlers()
     if brawlers:
@@ -498,206 +702,24 @@ async def random_brawler(ctx):
     else:
         await ctx.reply('브롤러 정보를 가져오는 데 문제가 발생했습니다.')
 
-@bot.command()
-async def ping(ctx):
-    await ctx.send('Pong!')
-
-@bot.command()
-async def 도움말(ctx):
-    message = (
-        "## 도움말\n"
-        f"> **1️⃣ 채팅: 채팅을 하려면 {prefix}채팅을 입력하세요**\n"
-        f"> **2️⃣ 도구: 도구를 보려면 {prefix}도구를 입력하세요**\n"
-        f"> **3️⃣ 브롤: 브롤 관련 메뉴를 보려면 {prefix}브롤을 입력하세요**\n"
-        f"> **4️⃣ 코인: 코인 관련 메뉴를 보려면 {prefix}코인을 입력하세요**\n"
-        f"> **5️⃣ 설정: 설정을 변경하려면 {prefix}설정을 입력하세요**\n"
-    )
-    await ctx.reply(message)
-
-
-@bot.command()
-async def 채팅(ctx):
-    message = (
-        "## 채팅 메뉴\n"
-        f"> **1️⃣ 도배: 도배를 하려면 {prefix}도배 갯수 내용 을 입력하세요**\n"
-        f"> **2️⃣ 청소: 청소를 하려면 {prefix}청소 갯수 를 입력하세요**\n"
-        f"> **3️⃣ 릭롤: {prefix}릭롤**\n"
-    )
-    await ctx.reply(message)
-
-@bot.command()
-async def 도배(ctx, count: int, *, message: str):
-    if message.strip() == "":
-        await ctx.reply("빈 메시지는 보낼 수 없어요!")
-        return
-    for _ in range(count):
-        await ctx.send(message)
-
-@bot.command()
-async def 청소(ctx, count: int):
-    if isinstance(ctx.channel, discord.DMChannel):
-        async for message in ctx.channel.history(limit=count+1):
-            if message.author == ctx.author:
-                await message.delete()
-        await ctx.send(f"{count}개의 메시지를 삭제했습니다.")
-        return
-
-    deleted_messages = await ctx.channel.purge(limit=count+1, check=lambda m: m.author == ctx.author)
-    deleted_count = len(deleted_messages) - 1
-    await ctx.send(f"{deleted_count}개의 메시지를 삭제했습니다.", delete_after=5)
-
-@bot.command()
-async def 릭롤(ctx):
-    await ctx.send('https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713')
-
-@bot.command()
-async def 도구(ctx):
-    message = (
-        "## 도구 메뉴\n"
-        f"> **1️⃣ 관리: 서버 관리 기능을 이용하려면 {prefix}관리 를 입력하세요**\n"
-        f"> **2️⃣ ip: 아이피 기능을 이용하려면 {prefix}ip ip주소 를 입력하세요**\n"
-        f"> **3️⃣ 통조림자충: 냥코 통조림 충전을 하려면 {prefix}통조림자충 <이어하기코드> <인증번호> <통조림>을 입력하세요**\n"
-    )
-    await ctx.reply(message)
-
-@bot.command()
-async def 관리(ctx):
-    if ctx.guild is None:
-        await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
-        return
-
-    # 관리자 권한 확인
-    if not ctx.author.guild_permissions.administrator:
-        await ctx.reply("서버 관리 기능을 사용하기 위해서는 관리자 권한이 필요합니다.")
-        return
-
-    message = (
-        "## 서버관리자 전용\n"
-        f"> **1️⃣ 밴: 밴하려면 {prefix}밴 유저멘션 을 입력하세요**\n"
-        f"> **2️⃣ 추방: 추방하려면 {prefix}추방 유저멘션 을 입력하세요**\n"
-        f"> **3️⃣ 별명: 별명을 변경하려면 {prefix}별명 유저멘션 새별명 을 입력하세요**\n"
-    )
-    await ctx.reply(message)
-
-@bot.command()
-async def 밴(ctx, member: discord.Member):
-    if ctx.guild is None:
-        await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
-        return
-    if not ctx.author.guild_permissions.administrator:
-        await ctx.reply("이 명령어를 사용하기 위해서는 관리자 권한이 필요합니다.")
-        return
-    await member.ban()
-    await ctx.reply(f"{member}님을 밴했습니다.")
-
-@bot.command()
-async def 추방(ctx, member: discord.Member):
-    if ctx.guild is None:
-        await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
-        return
-    if not ctx.author.guild_permissions.administrator:
-        await ctx.reply("이 명령어를 사용하기 위해서는 관리자 권한이 필요합니다.")
-        return
-    await member.kick()
-    await ctx.reply(f"{member}님을 추방했습니다.")
-
-@bot.command()
-async def 별명(ctx, member: discord.Member, nickname: str):
-    if ctx.guild is None:
-        await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
-        return
-    if not ctx.author.guild_permissions.administrator:
-        await ctx.reply("이 명령어를 사용하기 위해서는 관리자 권한이 필요합니다.")
-        return
-    await member.edit(nick=nickname)
-    await ctx.reply(f"{member}님의 별명을 {nickname}로 변경했습니다.")
-
-@bot.command()
-async def ip(ctx, address: str):
-    try:
-        response = requests.get(f'http://ip-api.com/json/{address}')
-        data = response.json()
-
-        if data.get('status') == 'success':
-            ip_address = f"> **IP 주소: {data['query']}**"
-            country = f"> **나라: {data['country']}**"
-            city = f"> **도시: {data['city']}**"
-            zip_code = f"> **우편번호: {data['zip']}**"
-            isp = f"> **ISP: {data['isp']}**"
-            map = f"> **지도: [클릭하여 구글지도로 이동하기](https://google.com/maps/place/{address})**"
-
-            message = f"## IP 정보\n{ip_address}\n{country}\n{city}\n{zip_code}\n{isp}\n{map}"
-
-            await ctx.send(message)
-        else:
-            await ctx.send("주소에 대한 정보를 찾을 수 없습니다.")
-    except Exception as e:
-        await ctx.send(f"IP 조회 중 오류가 발생했습니다: {e}")
-
-@bot.command()
-async def 브롤(ctx):
-    message = (
-        "## 브롤스타즈 API\n"
-        f"> **1️⃣ 정보: 기본적인 정보를 보려면 {prefix}정보 #플레이어 태그 를 입력하세요**\n"
-        f"> **2️⃣ 전적: 전적을 확인하려면 {prefix}전적 #플레이어 태그를 입력하세요**\n"
-    )
-    await ctx.reply(message)
-
-@bot.command()
-async def 통조림자충(ctx, 이어하기코드, 인증번호, 통조림):
-    if not 이어하기코드 or not 인증번호 or not 통조림:
-        await ctx.reply(f"올바른 양식을 사용해주세요. 사용법: {bot.command_prefix}통조림자충 <이어하기코드> <인증번호> <통조림>")
-        return
-
-    try:
-        with open("config.json", "r") as config_file:
-            config = json.load(config_file)
-            webhook_url = config.get('webhook')  # config에서 웹훅 주소 받아오기
-            if not webhook_url:
-                await ctx.reply("config 파일에서 올바른 웹훅 주소를 설정해주세요.")
-                return
-            await ctx.message.edit(content="**작업을 시작합니다.**")
-            webhook_obj = discord.Webhook.from_url(webhook_url, adapter=discord.RequestsWebhookAdapter())
-            tc = 이어하기코드
-            cc = 인증번호
-            country = 'kr'
-            gv = config['version']
-            cf = int(통조림)
-            
-            downloadfile(tc, cc, country, gv)
-            time.sleep(0.1)
-            save_stats["cat_food"]["Value"] = cf
-            time.sleep(0.1)
-            processes = []
-            placeholder = (
-            "Main Dev : CintagramABP\n"
-            "Dev : kimchaewon_cute\n"
-            )
-            if os.path.exists("account.txt"):
-                os.remove("account.txt")
-            open("account.txt", "w+", encoding="utf-8").write(placeholder)
-            uploadsave()
-            await ctx.message.edit(content="**작업을 시작합니다.**\n**계정이 업로드 되었습니다.**")
-            with open("account.txt", "r") as f:
-                output_text = f.read()
-            time.sleep(0.5)
-            webhook_obj.send(f"작업 완료되었습니다. \n```{output_text}```")
-            await ctx.message.edit(content="**작업을 시작합니다.**\n**계정이 업로드 되었습니다.**\n**작업이 완료되었습니다. 웹훅을 확인해주세요!**")
-
-    except TypeError as e:
-        await ctx.reply(f"에러발생 {e}")
-    except Exception as e:
-        await ctx.reply("작업중 오류가 발생하였습니다.(잘못된 기기변경코드 및 통조림 갯수 초과)")
-        if webhook_url:
-            webhook_obj = discord.Webhook.from_url(webhook_url, adapter=discord.RequestsWebhookAdapter())
-            webhook_obj.send(f"작업중 오류가 발생하였습니다.{e}")
-
 # config.json 파일에 설정을 저장하는 함수
 def save_config(config):
     with open(CONFIG, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=4)
 
-user_wallets = {}
+# 코인 모의 투자 기능 봇 껐다 키면 잔고 초기화됨 초기 잔고는 1억 달러(수정 가능)
+@bot.command()
+async def 코인(ctx):
+    message = (
+        "## 코인 모의 투자\n"
+        f"> **1️⃣ 지갑: 잔고를 확인하려면 {prefix}지갑 을 입력하세요**\n"
+        f"> **2️⃣ 코인목록: 코인의 목록을 확인하려면 {prefix}코인목록 을 입력하세요**\n"
+        f"> **3️⃣ 코인구매: 코인을 구매하려면 {prefix}구매 <코인 이름> <갯수> 를 입력하세요**\n"
+        f"> **4️⃣ 코인판매: 코인을 판매하려면 {prefix}판매 <코인 이름> <갯수> 를 입력하세요**\n"
+        f"> **5️⃣ 잔고수정: 잔고를 수정하려면 {prefix}잔고수정 <돈> 을 입력하세요(수익률도 변경되니 조심)**\n"
+        f"> **6️⃣ 가격수정: 코인의 가격을 수정하려면 {prefix}가격수정 <코인 이름> <갯수> 를 입력하세요**\n"
+    )
+    await ctx.reply(message)
 
 # 코인 목록과 가격을 딕셔너리로 관리
 coin_prices = {
@@ -735,10 +757,6 @@ bot.loop.create_task(update_coin_prices())
 # 사용자의 지갑을 초기화하는 함수
 async def initialize_wallet(user_id):
     user_wallets[user_id] = {"balance": 100000000, "coins": {}}
-
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user}')
 
 # 사용자의 초기 잔고
 INITIAL_BALANCE = 100000000
@@ -852,19 +870,7 @@ async def 가격수정(ctx, coin: str, price: float):
     coin_prices[coin] = price
     await ctx.reply(f"{coin}의 가격이 {price}달러로 수정되었습니다.")
 
-@bot.command()
-async def 코인(ctx):
-    message = (
-        "## 코인 모의 투자\n"
-        f"> **1️⃣ 지갑: 잔고를 확인하려면 {prefix}지갑 을 입력하세요**\n"
-        f"> **2️⃣ 코인목록: 코인의 목록을 확인하려면 {prefix}코인목록 을 입력하세요**\n"
-        f"> **3️⃣ 코인구매: 코인을 구매하려면 {prefix}구매 <코인 이름> <갯수> 를 입력하세요**\n"
-        f"> **4️⃣ 코인판매: 코인을 판매하려면 {prefix}판매 <코인 이름> <갯수> 를 입력하세요**\n"
-        f"> **5️⃣ 잔고수정: 잔고를 수정하려면 {prefix}잔고수정 <돈> 을 입력하세요(수익률도 변경되니 조심)**\n"
-        f"> **6️⃣ 가격수정: 코인의 가격을 수정하려면 {prefix}가격수정 <코인 이름> <갯수> 를 입력하세요**\n"
-    )
-    await ctx.reply(message)
-
+# 미완성. 게임 코드 잘못 짜서 다 뜯어고쳐야함함
 @bot.command()
 async def 게임(ctx):
     message = (
@@ -991,6 +997,7 @@ async def 훈련(ctx):
     train_result = player.train()
     await ctx.send(train_result)
 
+# 작동x
 @bot.command()
 async def 무기(ctx):
     message = (
