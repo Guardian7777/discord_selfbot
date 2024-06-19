@@ -30,7 +30,7 @@ TOKEN = config.get("token")
 BS_API_TOKEN = config['api']
 URL = config['url']
 prefix = config["prefix"]
-TAG = config["tag"] # 아직 기능 추가 안함
+TAG = config["tag"] # 현재 기능 추가 완료(v3 업데이트 예정)
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix=config["prefix"], self_bot=True, intents=intents)
@@ -41,7 +41,7 @@ async def on_ready():
 
 @bot.command()
 async def ping(ctx):
-    await ctx.send('Pong!')
+    await ctx.send('Pong!') # v3 업데이트 : 지연시간 추가
 
 @bot.command()
 async def 도움말(ctx):
