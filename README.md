@@ -4,7 +4,9 @@
   <img src="https://github.com/Guardian7777/discord_selfbot/assets/76465459/27d6822c-745e-4f7e-bed5-618e24a11ed6">
 </p>
 
-- Programming : ![Python](https://img.shields.io/badge/Python-3776AB?logo=Python&logoColor=white)
+## Programming
+
+![Python](https://img.shields.io/badge/Python-3776AB?logo=Python&logoColor=white)
 
 ### 오류 있으면 연락 주세요
 
