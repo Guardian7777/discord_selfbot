@@ -1,0 +1,8 @@
+discord.py==1.7.3
+asyncio
+requests
+urllib3
+bcsfe-discord
+numpy
+matplotlib
+pytz
