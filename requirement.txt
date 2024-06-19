@@ -6,3 +6,4 @@ bcsfe-discord
 numpy
 matplotlib
 pytz
+openai
