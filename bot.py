@@ -63,6 +63,7 @@ async def 채팅(ctx):
         f"> **1️⃣ 도배: 도배를 하려면 {prefix}도배 갯수 내용 을 입력하세요**\n"
         f"> **2️⃣ 청소: 청소를 하려면 {prefix}청소 갯수 를 입력하세요**\n"
         f"> **3️⃣ 릭롤: {prefix}릭롤**\n"
+        f"> **4️⃣ 랜덤짤: 랜덤짤을 보내려면 {prefix}랜덤짤 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -90,6 +91,61 @@ async def 청소(ctx, count: int):
 @bot.command()
 async def 릭롤(ctx):
     await ctx.send('https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713')
+
+# 랜덤짤 링크 리스트
+random_jjal_links = [
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224510",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224522",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224538",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224523",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224532",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224505",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224521",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224501",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224499",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224500",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-mc%EB%AC%B4%ED%98%84-%EB%AC%B4%ED%98%84-%EB%86%88%ED%98%84-gif-20749558",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224512",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224517",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224504",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224539",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224516",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819009",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224511",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224502",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819011",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224519",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224514",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-speech-gif-14501752",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224530",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819007",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-2275462757071994202",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224527",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224536",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224506",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819006",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224508",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224533",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819002",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224531",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819008",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224524",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224509",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819001",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224515",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819004",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224537",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819005",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819003",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224528",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224518"
+]
+
+# 사용시 주의 필요
+@bot.command()
+async def 랜덤짤(ctx):
+        random_jjal = random.choice(random_jjal_links)
+        await ctx.reply(random_jjal)
 
 # 각종 도구
 @bot.command()
