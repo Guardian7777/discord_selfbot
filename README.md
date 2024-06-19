@@ -4,7 +4,7 @@
   <img src="https://github.com/Guardian7777/discord_selfbot/assets/76465459/27d6822c-745e-4f7e-bed5-618e24a11ed6">
 </p>
 
-## Programming
+## Programming Language
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white) ![JSON](https://img.shields.io/badge/json-000000?style=for-the-badge&logo=json&logoColor=white)
 
