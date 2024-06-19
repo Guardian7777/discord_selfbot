@@ -6,7 +6,7 @@
 
 ## Programming
 
-![Python](https://img.shields.io/badge/Python-3776AB?logo=Python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white)
 
 ### 오류 있으면 연락 주세요
 
