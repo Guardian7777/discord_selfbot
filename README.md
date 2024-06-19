@@ -7,8 +7,10 @@
 - Programming <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white">
 
 ### 오류 있으면 연락 주세요
-- Discord ID : hm_son
+- Discord ID : **hm_son**
 - my server : https://discord.gg/SVRDZBsYNv
 - supporting server : https://discord.gg/pulservice
 
-### 호스팅 지원좀...
+- Collaborators : **kimchaewon_cute**, **star_1th**
+
+### <s>호스팅 지원좀...</s>
