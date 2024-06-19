@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from datetime import datetime
 import pytz
+import openai
 
 CONFIG = r"콘픽경로" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈셈
 
@@ -283,6 +284,33 @@ async def 통조림자충(ctx, 이어하기코드, 인증번호, 통조림):
         if webhook_url:
             webhook_obj = discord.Webhook.from_url(webhook_url, adapter=discord.RequestsWebhookAdapter())
             webhook_obj.send(f"작업중 오류가 발생하였습니다.{e}")
+
+# OpenAI API 키 설정
+openai.api_key = '' # 발급받은 api 키 입력
+
+# !gpt 명령어 정의
+@bot.command()
+async def gpt(ctx, *, prompt: str):
+    if prompt.strip() == "":
+        await ctx.reply("빈 프롬프트로는 대답할 수 없어요!")
+        return
+    
+    try:
+        # OpenAI API 호출
+        response = await asyncio.to_thread(openai.Completion.create,
+                                           engine="gpt-3.5-turbo-instruct", # 사용할 엔진
+                                           prompt=prompt,
+                                           max_tokens=150, # 바꿔도 
+                                           GPT=openai.api_key)
+        
+        # API 응답에서 텍스트 추출
+        answer = response.choices[0].text.strip()
+        
+        # 디스코드 채널에 응답 전송
+        await ctx.reply(answer)
+    
+    except Exception as e:
+        await ctx.send(f"오류가 발생했습니다: {e}")
 
 # 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
 @bot.command()
