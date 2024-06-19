@@ -30,7 +30,7 @@ TOKEN = config.get("token")
 BS_API_TOKEN = config['api']
 URL = config['url']
 prefix = config["prefix"]
-TAG = config["tag"]
+TAG = config["tag"] # 아직 기능 추가 안함
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix=config["prefix"], self_bot=True, intents=intents)
@@ -48,32 +48,6 @@ def get_player_info(player_tag):
         return response.json()
     else:
         return None
-    
-# 봇 명령어: 브롤스타즈 플레이어 정보 출력
-@bot.command(name='정보')
-async def player_info(ctx, player_tag):
-    player_tag = urllib.parse.quote(player_tag)
-    player_data = get_player_info(player_tag)
-    if player_data:
-        player_name = player_data['name']
-        trophies = player_data['trophies']
-        club_name = player_data['club']['name']
-        await ctx.reply(f'플레이어 이름: {player_name}\n트로피: {trophies}\n클럽 이름: {club_name}')
-    else:
-        await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
-
-@bot.command(name='내정보')
-async def player_info(ctx):
-    player_tag = '#LG9VGQGR'
-    player_tag = urllib.parse.quote(player_tag)
-    player_data = get_player_info(player_tag)
-    if player_data:
-        player_name = player_data['name']
-        trophies = player_data['trophies']
-        club_name = player_data['club']['name']
-        await ctx.reply(f'플레이어 이름: {player_name}\n트로피: {trophies}\n클럽 이름: {club_name}')
-    else:
-        await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
 
 # 브롤스타즈 API: 플레이어 세부 정보 가져오기
 def get_player_detail_info(player_tag):
@@ -85,7 +59,24 @@ def get_player_detail_info(player_tag):
     else:
         return None
 
-# 브롤러 영어 이름과 한국어 이름 매핑 테이블
+# 한글 폰트 설정
+font_path = r"폰트 경로 지정정"
+font_prop = fm.FontProperties(fname=font_path)
+plt.rcParams['font.family'] = font_prop.get_name()
+
+def get_battle_log(player_tag):
+    headers = {
+        'Authorization': f'Bearer {BS_API_TOKEN}',
+        'Accept': 'application/json'
+    }
+    response = requests.get(f'{URL}/players/{player_tag}/battlelog', headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f'Failed to fetch battle log. Status code: {response.status_code}')
+        return None
+
+# 브롤러 이름 한글 매핑
 brawler_name_mapping = {
     "SHELLY": "쉘리",
     "NITA": "니타",
@@ -167,8 +158,35 @@ brawler_name_mapping = {
     "CORDELIUS": "코델리우스",
     "KIT": "키트",
     "DRACO": "드라코"
-    # 추가적인 브롤러 이름도 여기에 추가할 수 있습니다.
+    # 신규 브롤러 추가되면 업데이트함
 }
+    
+# 플레이어 정보 출력
+@bot.command(name='정보')
+async def player_info(ctx, player_tag):
+    player_tag = urllib.parse.quote(player_tag)
+    player_data = get_player_info(player_tag)
+    if player_data:
+        player_name = player_data['name']
+        trophies = player_data['trophies']
+        club_name = player_data['club']['name']
+        await ctx.reply(f'플레이어 이름: {player_name}\n트로피: {trophies}\n클럽 이름: {club_name}')
+    else:
+        await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
+
+# 할때마다 태그 넣기 귀찮아서 만듦
+@bot.command(name='내정보')
+async def player_info(ctx):
+    player_tag = '#본인태그'
+    player_tag = urllib.parse.quote(player_tag)
+    player_data = get_player_info(player_tag)
+    if player_data:
+        player_name = player_data['name']
+        trophies = player_data['trophies']
+        club_name = player_data['club']['name']
+        await ctx.reply(f'플레이어 이름: {player_name}\n트로피: {trophies}\n클럽 이름: {club_name}')
+    else:
+        await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
 
 @bot.command(name='전적')
 async def player_detail_info(ctx, *, player_tag):
@@ -200,7 +218,7 @@ async def player_detail_info(ctx, *, player_tag):
 
 @bot.command(name='내전적')
 async def player_detail_info(ctx):
-    player_tag = '#LG9VGQGR'
+    player_tag = '#본인태그'
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     if player_data:
@@ -219,34 +237,7 @@ async def player_detail_info(ctx):
             f'트로피: {trophies}\n'
             f'최고 트로피: {best_trophies}\n'
             f'3vs3 모드 승리: {three_vs_three_wins}\n'
-            f'솔로 모드 승리: {solo_victories}\n'
-            f'듀오 모드 승리: {duo_victories}\n'
-        )
-
-        await ctx.reply(message)
-    else:
-        await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
-
-@bot.command(name='레벨')
-async def brawler_levels(ctx, *, player_tag):
-    player_tag = urllib.parse.quote(player_tag)
-    player_data = get_player_detail_info(player_tag)
-    if player_data:
-        brawlers = player_data.get('brawlers', [])
-        sorted_brawlers = sorted(brawlers, key=lambda x: x['power'], reverse=True)  # 레벨 높은 순으로 정렬
-        message = '## 브롤러별 레벨\n'
-        for brawler in sorted_brawlers:
-            name = brawler['name']
-            power = brawler['power']
-            korean_name = brawler_name_mapping.get(name, name)
-            message += f'> **{korean_name} - {power} 레벨**\n'
-        await ctx.reply(message)
-    else:
-        await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
-
-@bot.command(name='내레벨')
-async def brawler_levels(ctx):
-    player_tag = '#LG9VGQGR'
+            f'솔로 모그'
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     if player_data:
@@ -368,23 +359,6 @@ async def brawler_masteries(ctx):
         await ctx.reply(message)
     else:
         await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
-
-# 한글 폰트 설정
-font_path = "./NanumGothic.ttf" # NanumGothic 폰트 경로
-font_prop = fm.FontProperties(fname=font_path)
-plt.rcParams['font.family'] = font_prop.get_name()
-
-def get_battle_log(player_tag):
-    headers = {
-        'Authorization': f'Bearer {BS_API_TOKEN}',
-        'Accept': 'application/json'
-    }
-    response = requests.get(f'{URL}/players/{player_tag}/battlelog', headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f'Failed to fetch battle log. Status code: {response.status_code}')
-        return None
 
 @bot.command(name='그래프')
 async def trophies_graph(ctx, *, player_tag):
