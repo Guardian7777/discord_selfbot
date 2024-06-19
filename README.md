@@ -8,7 +8,7 @@
 
 ### 오류 있으면 연락 주세요
 
-<img src="https://img.shields.io/badge/Discord-5865F2?logo=Discord&logoColor=white">
+<img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=Discord&logoColor=white">
 
 - Discord ID : **hm_son**
 - my server : https://discord.gg/SVRDZBsYNv
