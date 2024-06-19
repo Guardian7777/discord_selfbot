@@ -7,3 +7,4 @@ numpy
 matplotlib
 pytz
 openai
+googlesearch-python
