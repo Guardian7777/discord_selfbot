@@ -10,7 +10,7 @@
 
 <img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=Discord&logoColor=white">
 
-- Discord ID : **hm_son**
+- main Dev : **hm_son**
 - my server : https://discord.gg/SVRDZBsYNv
 - supporting server : https://discord.gg/pulservice
 
