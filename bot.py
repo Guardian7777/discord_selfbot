@@ -14,7 +14,7 @@ import matplotlib.font_manager as fm
 from datetime import datetime
 import pytz
 
-CONFIG = "./school.json"
+CONFIG = r"콘픽경로" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈셈
 
 def load_config():
     with open(CONFIG, 'r', encoding='utf-8') as f:
@@ -39,7 +39,7 @@ bot = commands.Bot(command_prefix=config["prefix"], self_bot=True, intents=inten
 async def on_ready():
     print(f'Logged in as {bot.user}')
 
-# 브롤스타즈 API 요청 함수
+# 브롤스타즈 API 요청
 def get_player_info(player_tag):
     url = f'{URL}/players/{player_tag}'
     headers = {'Authorization': f'Bearer {BS_API_TOKEN}'}
@@ -49,7 +49,7 @@ def get_player_info(player_tag):
     else:
         return None
 
-# 브롤스타즈 API: 플레이어 세부 정보 가져오기
+# 플레이어 세부 정보 가져오기
 def get_player_detail_info(player_tag):
     url = f'{URL}/players/{player_tag}'
     headers = {'Authorization': f'Bearer {BS_API_TOKEN}'}
@@ -60,7 +60,7 @@ def get_player_detail_info(player_tag):
         return None
 
 # 한글 폰트 설정
-font_path = r"폰트 경로 지정정"
+font_path = r"폰트 경로 지정" # 아이폰 쓰면 앞에 한거처럼 ㄱㄱㄱ
 font_prop = fm.FontProperties(fname=font_path)
 plt.rcParams['font.family'] = font_prop.get_name()
 
@@ -272,7 +272,7 @@ async def brawler_ranks(ctx, *, player_tag):
 
 @bot.command(name='내랭크')
 async def brawler_ranks(ctx):
-    player_tag = '#LG9VGQGR'
+    player_tag = '#본인태그'
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     if player_data:
@@ -288,6 +288,7 @@ async def brawler_ranks(ctx):
     else:
         await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
 
+# 밑에 만든 최트랑 비슷해서 삭제할 수도 있긴한데 걍 일단 놔둠
 @bot.command(name='트로피')
 async def brawler_trophies(ctx, *, player_tag):
     player_tag = urllib.parse.quote(player_tag)
@@ -307,7 +308,7 @@ async def brawler_trophies(ctx, *, player_tag):
 
 @bot.command(name='내트로피')
 async def brawler_trophies(ctx):
-    player_tag = '#LG9VGQGR'
+    player_tag = '#본인태그'
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     if player_data:
@@ -360,6 +361,7 @@ async def brawler_masteries(ctx):
     else:
         await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
 
+# 그래프 수정할 거 있음
 @bot.command(name='그래프')
 async def trophies_graph(ctx, *, player_tag):
     player_tag = urllib.parse.quote(player_tag)
@@ -400,7 +402,7 @@ async def trophies_graph(ctx, *, player_tag):
         plt.savefig(graph_filename)
         plt.close()
         
-        # Discord에 그래프 이미지 전송
+        # 그래프 이미지 전송
         with open(graph_filename, 'rb') as f:
             file = discord.File(f)
             await ctx.reply(file=file)
@@ -424,7 +426,7 @@ def get_brawlers():
     
 @bot.command(name='내그래프')
 async def trophies_graph(ctx):
-    player_tag = '#LG9VGQGR'
+    player_tag = '#본인태그'
     player_tag = urllib.parse.quote(player_tag)
     player_data = get_player_detail_info(player_tag)
     battle_log = get_battle_log(player_tag)
