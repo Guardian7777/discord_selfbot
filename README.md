@@ -1,6 +1,6 @@
 # 🤖 디스코드 브롤스타즈 API 셀프봇
 <p align="center">
-  <img src="이미지URL">
+  <img src="https://github.com/Guardian7777/discord_selfbot/assets/76465459/27d6822c-745e-4f7e-bed5-618e24a11ed6">
 </p>
 브롤스타즈 API를 사용한 디스코드 셀프봇 (개발중)
 
