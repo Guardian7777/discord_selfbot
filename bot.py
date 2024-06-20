@@ -180,8 +180,10 @@ async def 관리(ctx):
         f"> **1️⃣ 밴: 밴하려면 {prefix}밴 유저멘션 을 입력하세요**\n"
         f"> **2️⃣ 추방: 추방하려면 {prefix}추방 유저멘션 을 입력하세요**\n"
         f"> **3️⃣ 별명: 별명을 변경하려면 {prefix}별명 유저멘션 새별명 을 입력하세요**\n"
-        f"> **4️⃣ 역할: 역할을 생성 또는 삭제하려면 {prefix}역할 생성/제거 역할 이름 을 입력하세요 **\n"
-        f"> **5️⃣ 부여/회수: 역할을 부여 또는 회수하려면 {prefix}부여/회수 역할 이름 을 입력하세**\n"
+        f"> **4️⃣ 역할 생성/삭제: 역할을 생성 또는 삭제하려면 {prefix}역할 생성/제거 역할 이름 을 입력하세요 **\n"
+        f"> **5️⃣ 역할 부여/회수: 역할을 부여 또는 회수하려면 {prefix}부여/회수 역할 이름 을 입력하세요**\n"
+        f"> **6️⃣ 티켓 생성/삭제: 티켓을 생성 또는 삭제하려면 {prefix}티켓 생성/삭제 유저멘션 을 입력하세요 **\n"
+        f"> **7️⃣ 티켓 열기/닫기: 티켓을 열거나 닫으려 {prefix}티켓 열기/닫기 유저멘션 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -222,7 +224,7 @@ async def 별명(ctx, member: discord.Member, nickname: str):
 async def 역할(ctx, action: str, *, role_name):
     if action == "생성":
         try:
-            role = await ctx.guild.create_role(name=role_name, permissions=discord.Permissions(manage_guild=True), color=discord.Color.red())
+            role = await ctx.guild.create_role(name=role_name, color=discord.Color.red())
             await ctx.author.add_roles(role)
             await ctx.reply(f"{role_name} 역할을 생성하고, {ctx.author.mention}님에게 추가했습니다.")
         except Exception as e:
@@ -238,7 +240,7 @@ async def 역할(ctx, action: str, *, role_name):
         except Exception as e:
             await ctx.reply(f"오류발생: {e}")
     else:
-        await ctx.reply(f"올바른 형식으로 사용해주세요.\n> {prefix}역할 생성 (역할 이름)\n> {prefix}역할 제거 (역할 이름)")
+        await ctx.reply(f"올바른 형식으로 사용해주세요.\n> !역할 생성 (역할 이름)\n> !역할 제거 (역할 이름)")
 
 @bot.command()
 async def 부여(ctx, member: discord.Member, *, role_name):
@@ -263,6 +265,68 @@ async def 회수(ctx, member: discord.Member, *, role_name):
             await ctx.reply(f"오류발생: {e}")
     else:
         await ctx.reply(f"{role_name} 역할이 존재하지 않습니다.")
+
+@bot.command()
+async def 티켓(ctx, action: str, *, member: discord.Member):
+    if action == "생성":
+        # 티켓 채널 이름 설정
+        channel_name = f"티켓-{member.name}-{member.discriminator}"
+        
+        # 채널 생성
+        try:
+            overwrites = {
+                ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                member: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+            }
+            channel = await ctx.guild.create_text_channel(channel_name, overwrites=overwrites)
+            await ctx.send(f"{member.mention}님의 티켓 채널이 생성되었습니다.")
+        except Exception as e:
+            await ctx.send(f"오류 발생: {e}")
+
+    elif action == "삭제":
+        # 티켓 채널 삭제
+        channel_name = f"티켓-{member.name}-{member.discriminator}"
+        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        if channel:
+            await channel.delete()
+            await ctx.send(f"{member.mention}님의 티켓 채널이 삭제되었습니다.")
+        else:
+            await ctx.send(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
+    
+    elif action == "열기":
+        # 티켓 채널에서 멤버 권한 다시 부여
+        channel_name = f"티켓-{member.name}-{member.discriminator}"
+        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        if channel:
+            overwrites = {
+                ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                member: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+            }
+            await channel.edit(overwrites=overwrites)
+            await ctx.send(f"{member.mention}님의 티켓 채널 접근 권한이 다시 부여되었습니다.")
+        else:
+            await ctx.send(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
+
+    if action == "닫기":
+        # 티켓 채널에서 멤버 권한 제거
+        channel_name = f"티켓-{member.name}-{member.discriminator}"
+        channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+        if channel:
+            overwrites = {
+                ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),  # 모든 멤버의 읽기 권한을 거짓(False)으로 설정
+                member: discord.PermissionOverwrite(read_messages=False, send_messages=False)  # 특정 멤버의 읽기와 쓰기 권한을 거짓(False)으로 설정하여 제거
+            }
+            await channel.edit(overwrites=overwrites)
+            await ctx.send(f"{member.mention}님의 티켓 채널 접근 권한이 제거되었습니다.")
+        else:
+            await ctx.send(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
+    
+    else:
+        await ctx.reply("올바른 형식으로 사용해주세요.\n"
+                        "> !티켓 생성 @멘션\n"
+                        "> !티켓 삭제 @멘션\n"
+                        "> !티켓 열기 @멘션\n"
+                        "> !티켓 닫기 @멘션")
 
 # ip 확인
 @bot.command()
