@@ -1,0 +1,9 @@
+{
+    "token": "본인토큰",
+    "prefix": "!",
+    "api": "브롤 api키",
+    "url": "https://api.brawlstars.com/v1",
+    "activity": "\ud14c\uc2a4\ud2b8",
+    "tag": "#본인태그",
+    "openai.api_key": "open ai api키"
+}
