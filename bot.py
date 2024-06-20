@@ -15,6 +15,7 @@ from datetime import datetime
 import pytz
 import openai
 from googlesearch import search
+from googletrans import Translator
 
 CONFIG = r"콘픽경로" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
 
@@ -184,6 +185,7 @@ async def 관리(ctx):
         f"> **5️⃣ 역할 부여/회수: 역할을 부여 또는 회수하려면 {prefix}부여/회수 역할 이름 을 입력하세요**\n"
         f"> **6️⃣ 티켓 생성/삭제: 티켓을 생성 또는 삭제하려면 {prefix}티켓 생성/삭제 유저멘션 을 입력하세요 **\n"
         f"> **7️⃣ 티켓 열기/닫기: 티켓을 열거나 닫으려 {prefix}티켓 열기/닫기 유저멘션 을 입력하세요**\n"
+        f"> **8️⃣ 번역: 원하는 언어로 번역하려면 {prefix}번역 번역할 언어 번역할 문장 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -453,6 +455,136 @@ async def 홍보(ctx):
         await ctx.send(f"메시지를 보낼 수 없습니다: {e.status} {e.text}")
     except Exception as e:
         await ctx.send(f"오류가 발생했습니다: {type(e).__name__}: {e}")
+
+# Google Translate API를 사용하는 번역기 객체 생성
+translator = Translator()
+
+@bot.command()
+async def 언어(ctx):
+    languages = """
+    af: Afrikaans
+    sq: Albanian
+    am: Amharic
+    ar: Arabic
+    hy: Armenian
+    az: Azerbaijani
+    eu: Basque
+    be: Belarusian
+    bn: Bengali
+    bs: Bosnian
+    bg: Bulgarian
+    ca: Catalan
+    ceb: Cebuano
+    ny: Chichewa
+    zh-CN: Chinese (Simplified)
+    zh-TW: Chinese (Traditional)
+    co: Corsican
+    hr: Croatian
+    cs: Czech
+    da: Danish
+    nl: Dutch
+    en: English
+    eo: Esperanto
+    et: Estonian
+    tl: Filipino
+    fi: Finnish
+    fr: French
+    fy: Frisian
+    gl: Galician
+    ka: Georgian
+    de: German
+    el: Greek
+    gu: Gujarati
+    ht: Haitian Creole
+    ha: Hausa
+    haw: Hawaiian
+    iw: Hebrew
+    hi: Hindi
+    hmn: Hmong
+    hu: Hungarian
+    is: Icelandic
+    ig: Igbo
+    id: Indonesian
+    ga: Irish
+    it: Italian
+    ja: Japanese
+    jw: Javanese
+    kn: Kannada
+    kk: Kazakh
+    km: Khmer
+    rw: Kinyarwanda
+    ko: Korean
+    ku: Kurdish (Kurmanji)
+    ky: Kyrgyz
+    lo: Lao
+    la: Latin
+    lv: Latvian
+    lt: Lithuanian
+    lb: Luxembourgish
+    mk: Macedonian
+    mg: Malagasy
+    ms: Malay
+    ml: Malayalam
+    mt: Maltese
+    mi: Maori
+    mr: Marathi
+    mn: Mongolian
+    my: Myanmar (Burmese)
+    ne: Nepali
+    no: Norwegian
+    or: Odia (Oriya)
+    ps: Pashto
+    fa: Persian
+    pl: Polish
+    pt: Portuguese
+    pa: Punjabi
+    ro: Romanian
+    ru: Russian
+    sm: Samoan
+    gd: Scots Gaelic
+    sr: Serbian
+    st: Sesotho
+    sn: Shona
+    sd: Sindhi
+    si: Sinhala
+    sk: Slovak
+    sl: Slovenian
+    so: Somali
+    es: Spanish
+    su: Sundanese
+    sw: Swahili
+    sv: Swedish
+    tg: Tajik
+    ta: Tamil
+    te: Telugu
+    th: Thai
+    tr: Turkish
+    uk: Ukrainian
+    ur: Urdu
+    ug: Uyghur
+    uz: Uzbek
+    vi: Vietnamese
+    cy: Welsh
+    xh: Xhosa
+    yi: Yiddish
+    yo: Yoruba
+    zu: Zulu
+    """
+    await ctx.send(f"다음은 지원하는 언어 코드와 이름입니다:\n```{languages}```")
+
+# !번역 명령어
+@bot.command()
+async def 번역(ctx, target_lang: str, *, text: str):
+    try:
+        # Google Translate API를 사용하여 텍스트 번역
+        translation = translator.translate(text, dest=target_lang)
+        translated_text = translation.text
+
+        # 번역 결과를 디스코드 채널에 전송
+        await ctx.send(f'번역 결과 ({target_lang}): {translated_text}')
+
+    except Exception as e:
+        await ctx.send(f'번역 중 오류가 발생했습니다: {e}')
 
 # 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
 @bot.command()
