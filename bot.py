@@ -281,9 +281,9 @@ async def 티켓(ctx, action: str, *, member: discord.Member):
                 member: discord.PermissionOverwrite(read_messages=True, send_messages=True)
             }
             channel = await ctx.guild.create_text_channel(channel_name, overwrites=overwrites)
-            await ctx.send(f"{member.mention}님의 티켓 채널이 생성되었습니다.")
+            await ctx.reply(f"{member.mention}님의 티켓 채널이 생성되었습니다.")
         except Exception as e:
-            await ctx.send(f"오류 발생: {e}")
+            await ctx.reply(f"오류 발생: {e}")
 
     elif action == "삭제":
         # 티켓 채널 삭제
@@ -291,9 +291,9 @@ async def 티켓(ctx, action: str, *, member: discord.Member):
         channel = discord.utils.get(ctx.guild.channels, name=channel_name)
         if channel:
             await channel.delete()
-            await ctx.send(f"{member.mention}님의 티켓 채널이 삭제되었습니다.")
+            await ctx.reply(f"{member.mention}님의 티켓 채널이 삭제되었습니다.")
         else:
-            await ctx.send(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
+            await ctx.reply(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
     
     elif action == "열기":
         # 티켓 채널에서 멤버 권한 다시 부여
@@ -305,9 +305,9 @@ async def 티켓(ctx, action: str, *, member: discord.Member):
                 member: discord.PermissionOverwrite(read_messages=True, send_messages=True)
             }
             await channel.edit(overwrites=overwrites)
-            await ctx.send(f"{member.mention}님의 티켓 채널 접근 권한이 다시 부여되었습니다.")
+            await ctx.reply(f"{member.mention}님의 티켓 채널 접근 권한이 다시 부여되었습니다.")
         else:
-            await ctx.send(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
+            await ctx.reply(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
 
     if action == "닫기":
         # 티켓 채널에서 멤버 권한 제거
@@ -319,9 +319,9 @@ async def 티켓(ctx, action: str, *, member: discord.Member):
                 member: discord.PermissionOverwrite(read_messages=False, send_messages=False)  # 특정 멤버의 읽기와 쓰기 권한을 거짓(False)으로 설정하여 제거
             }
             await channel.edit(overwrites=overwrites)
-            await ctx.send(f"{member.mention}님의 티켓 채널 접근 권한이 제거되었습니다.")
+            await ctx.reply(f"{member.mention}님의 티켓 채널 접근 권한이 제거되었습니다.")
         else:
-            await ctx.send(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
+            await ctx.reply(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
     
     else:
         await ctx.reply("올바른 형식으로 사용해주세요.\n"
@@ -428,7 +428,7 @@ async def gpt(ctx, *, prompt: str):
         await ctx.reply(answer)
     
     except Exception as e:
-        await ctx.send(f"오류가 발생했습니다: {e}")
+        await ctx.reply(f"오류가 발생했습니다: {e}")
 
 # 구글 검색 명령어 정의
 @bot.command(name='구글')
@@ -450,11 +450,11 @@ async def google_search(ctx, *, query: str):
 async def 홍보(ctx):
     try:
         promotion_message = config.get('promotion', '홍보 메시지가 없습니다. config.json에서 promotion에 링크를 작성해주세요.')
-        await ctx.send(promotion_message)
+        await ctx.reply(promotion_message)
     except discord.HTTPException as e:
-        await ctx.send(f"메시지를 보낼 수 없습니다: {e.status} {e.text}")
+        await ctx.reply(f"메시지를 보낼 수 없습니다: {e.status} {e.text}")
     except Exception as e:
-        await ctx.send(f"오류가 발생했습니다: {type(e).__name__}: {e}")
+        await ctx.reply(f"오류가 발생했습니다: {type(e).__name__}: {e}")
 
 # Google Translate API를 사용하는 번역기 객체 생성
 translator = Translator()
@@ -570,9 +570,8 @@ async def 언어(ctx):
     yo: Yoruba
     zu: Zulu
     """
-    await ctx.send(f"다음은 지원하는 언어 코드와 이름입니다:\n```{languages}```")
+    await ctx.reply(f"다음은 지원하는 언어 코드와 이름입니다:\n```{languages}```")
 
-# !번역 명령어
 @bot.command()
 async def 번역(ctx, target_lang: str, *, text: str):
     try:
@@ -581,10 +580,10 @@ async def 번역(ctx, target_lang: str, *, text: str):
         translated_text = translation.text
 
         # 번역 결과를 디스코드 채널에 전송
-        await ctx.send(f'번역 결과 ({target_lang}): {translated_text}')
+        await ctx.reply(f'번역 결과 ({target_lang}): {translated_text}')
 
     except Exception as e:
-        await ctx.send(f'번역 중 오류가 발생했습니다: {e}')
+        await ctx.reply(f'번역 중 오류가 발생했습니다: {e}')
 
 # 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
 @bot.command()
