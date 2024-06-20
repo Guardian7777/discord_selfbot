@@ -16,6 +16,7 @@
 - my server : https://discord.gg/SVRDZBsYNv
 - supporting server : https://discord.gg/pulservice
 
-- Collaborators : **kimchaewon_cute**, **star_1th**, **no.1_jj**
+- Collaborators : **kimchaewon_cute**, **star_1th**, **no.1_jj**, **bcpulservice**
 
-### <s>호스팅 지원좀...</s>
+### Sponsor
+- **bcpulservice** - 호스팅 지원
