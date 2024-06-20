@@ -4,7 +4,7 @@ import json
 import asyncio
 import requests
 
-CONFIG = r'콘픽'
+CONFIG = r'콘픽경로지정'
 
 def load_config():
     with open(CONFIG, 'r', encoding='utf-8') as f:
