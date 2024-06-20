@@ -157,6 +157,9 @@ async def 도구(ctx):
         f"> **1️⃣ 관리: 서버 관리 기능을 이용하려면 {prefix}관리 를 입력하세요**\n"
         f"> **2️⃣ ip: 아이피 기능을 이용하려면 {prefix}ip ip주소 를 입력하세요**\n"
         f"> **3️⃣ 통조림자충: 냥코 통조림 충전을 하려면 {prefix}통조림자충 <이어하기코드> <인증번호> <통조림>을 입력하세요**\n"
+        f"> **4️⃣ gpt: gpt를 사용하시려면 {prefix}gpt 내용 을 입력하세요**\n"
+        f"> **5️⃣ 구글: 구글 검색을 하시려면 {prefix}구글 내용 을 입력하세요**\n"
+        f"> **6️⃣ 홍보: 홍보 기능을 이용하시려면 {prefix}홍보 를 입력하세요**\n" # config.json에 있는 promotion에 링크나 내용 작성
     )
     await ctx.reply(message)
 
@@ -328,6 +331,16 @@ async def google_search(ctx, *, query: str):
 
     except Exception as e:
         await ctx.reply(f"오류가 발생했습니다: {e}")
+        
+@bot.command()
+async def 홍보(ctx):
+    try:
+        promotion_message = config.get('promotion', '홍보 메시지가 없습니다. config.json에서 promotion에 링크를 작성해주세요.')
+        await ctx.send(promotion_message)
+    except discord.HTTPException as e:
+        await ctx.send(f"메시지를 보낼 수 없습니다: {e.status} {e.text}")
+    except Exception as e:
+        await ctx.send(f"오류가 발생했습니다: {type(e).__name__}: {e}")
 
 # 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
 @bot.command()
