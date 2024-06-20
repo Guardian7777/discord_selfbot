@@ -16,7 +16,7 @@ import pytz
 import openai
 from googlesearch import search
 
-CONFIG = r"콘픽경로" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈셈
+CONFIG = r"콘픽경로" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
 
 def load_config():
     with open(CONFIG, 'r', encoding='utf-8') as f:
@@ -32,7 +32,7 @@ TOKEN = config.get("token")
 BS_API_TOKEN = config['api']
 URL = config['url']
 prefix = config["prefix"]
-TAG = config["tag"] # 현재 기능 추가 완료(v3 업데이트 예정)
+TAG = config["tag"]
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix=config["prefix"], self_bot=True, intents=intents)
@@ -1013,7 +1013,7 @@ async def 가격수정(ctx, coin: str, price: float):
     coin_prices[coin] = price
     await ctx.reply(f"{coin}의 가격이 {price}달러로 수정되었습니다.")
 
-# 미완성. 게임 코드 잘못 짜서 다 뜯어고쳐야함함
+# 미완성. 게임 코드 잘못 짜서 다 뜯어고쳐야함
 @bot.command()
 async def 게임(ctx):
     message = (
