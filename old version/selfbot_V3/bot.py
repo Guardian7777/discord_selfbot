@@ -12,7 +12,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from datetime import datetime
-import pytz
 
 CONFIG = r'콘픽경로지정'
 
@@ -368,23 +367,6 @@ async def brawler_maxtrophies(ctx):
         await ctx.reply(message)
     else:
         await ctx.reply('플레이어 정보를 가져오는 데 문제가 발생했습니다.')
-
-# 한글 폰트 설정
-font_path = r'폰트경로지정'  # NanumGothic 폰트 경로
-font_prop = fm.FontProperties(fname=font_path)
-plt.rcParams['font.family'] = font_prop.get_name()
-
-def get_battle_log(player_tag):
-    headers = {
-        'Authorization': f'Bearer {BS_API_TOKEN}',
-        'Accept': 'application/json'
-    }
-    response = requests.get(f'{URL}/players/{player_tag}/battlelog', headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f'Failed to fetch battle log. Status code: {response.status_code}')
-        return None
 
 @bot.command(name='그래프')
 async def trophies_graph(ctx, *, player_tag):
