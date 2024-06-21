@@ -169,7 +169,7 @@ async def 관리(ctx):
     if not ctx.author.guild_permissions.administrator:
         await ctx.reply("서버 관리 기능을 사용하기 위해서는 관리자 권한이 필요합니다.")
         return
-
+# 관리자 전용 아닌거도 있음 : 4.4에서 수정 예정
     message = (
         "## 서버관리자 전용\n"
         f"> **1️⃣ 밴: 밴하려면 {prefix}밴 유저멘션 을 입력하세요**\n"
