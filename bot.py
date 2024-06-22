@@ -43,8 +43,8 @@ async def on_ready():
     print(f'Logged in as {bot.user}')
 
 @bot.command()
-async def ping(ctx):
-    await ctx.send('Pong!') # v3 업데이트 : 지연시간 추가
+async def 핑(ctx):
+    await ctx.reply(f"퐁! 지연시간: {round(bot.latency * 1000)} ms")
 
 @bot.command()
 async def 도움말(ctx):
