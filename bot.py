@@ -67,6 +67,7 @@ async def 채팅(ctx):
         f"> **2️⃣ 청소: 청소를 하려면 {prefix}청소 갯수 를 입력하세요**\n"
         f"> **3️⃣ 릭롤: {prefix}릭롤**\n"
         f"> **4️⃣ 랜덤짤: 랜덤짤을 보내려면 {prefix}랜덤짤 을 입력하세요**\n"
+        f"> **5️⃣ 강화: 아이템을 강화하려면 {prefix}강화 강화할 아이템 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -149,6 +150,84 @@ random_jjal_links = [
 async def 랜덤짤(ctx):
         random_jjal = random.choice(random_jjal_links)
         await ctx.reply(random_jjal)
+
+# 강화할 아이템과 초기 강화 수준 설정
+enhance_items = {}
+
+# 강화 기록 관리
+user_enhance_records = {}
+
+@bot.command()
+async def 강화(ctx, item_name: str):
+    user_id = ctx.author.id
+    
+    # 강화 기록 초기화
+    if user_id not in user_enhance_records:
+        user_enhance_records[user_id] = {}
+    
+    # 아이템 초기화
+    if item_name not in enhance_items:
+        enhance_items[item_name] = {"enhance_level": 0}
+    
+    # 강화 기록 초기화
+    if item_name not in user_enhance_records[user_id]:
+        user_enhance_records[user_id][item_name] = {"enhance_level": 0}
+
+    current_level = user_enhance_records[user_id][item_name]["enhance_level"]
+    
+    # 강화 시도
+    success_rate = get_success_rate(current_level)
+    fail_chance = get_fail_chance(current_level)
+
+    if random.random() < success_rate:
+        # 강화 성공
+        user_enhance_records[user_id][item_name]["enhance_level"] += 1
+        await ctx.send(f"{ctx.author.mention}, {item_name}을(를) 강화하여 {current_level + 1}강이 되었습니다!")
+    else:
+        # 강화 실패
+        if current_level > 0:
+            user_enhance_records[user_id][item_name]["enhance_level"] -= 1
+            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! {current_level}강으로 강화 레벨이 감소하였습니다.")
+        else:
+            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! 최하 강화 레벨입니다.")
+
+        # 10강 이상일 때 터질 확률 추가
+        if current_level >= 10 and random.random() < fail_chance:
+            user_enhance_records[user_id][item_name]["enhance_level"] = 0
+            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패로 인해 아이템이 터졌습니다. 강화 레벨이 초기화되었습니다.")
+
+def get_success_rate(level):
+    # 초기 성공 확률 설정
+    success_rates = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55]
+    if level < len(success_rates):
+        return success_rates[level]
+    else:
+        return success_rates[-1]  # 최대 레벨 이후는 마지막 확률 유지
+
+def get_fail_chance(level):
+    # 강화 실패 시 터질 확률 설정
+    fail_chances = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35]
+    if level >= 10:
+        if level - 10 < len(fail_chances):
+            return fail_chances[level - 10]
+        else:
+            return fail_chances[-1]  # 최대 확률 유지
+    else:
+        return 0.0
+
+@bot.command()
+async def 강화목록(ctx):
+    user_id = ctx.author.id
+    
+    if user_id not in user_enhance_records or not user_enhance_records[user_id]:
+        await ctx.send("강화한 아이템이 없습니다.")
+        return
+    
+    message = f"{ctx.author.mention}의 강화 목록:\n"
+    for item_name, record in user_enhance_records[user_id].items():
+        message += f"{item_name}: {record['enhance_level']}강\n"
+    
+    await ctx.send(message)
 
 # 각종 도구
 @bot.command()
