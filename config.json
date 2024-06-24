@@ -6,5 +6,6 @@
     "activity": "\ud14c\uc2a4\ud2b8",
     "tag": "#본인태그",
     "openai.api_key": "open ai api키",
-    "promotion": "홍보 내용"
+    "promotion": "홍보 내용",
+    "mywebhook": "웹훅주소
 }
