@@ -253,6 +253,7 @@ async def 도구(ctx):
         f"> **5️⃣ 구글: 구글 검색을 하시려면 {prefix}구글 내용 을 입력하세요**\n"
         f"> **6️⃣ 홍보: 홍보 기능을 이용하시려면 {prefix}홍보 를 입력하세요**\n" # config.json에 있는 promotion에 링크나 내용 작성
         f"> **7️⃣ 웹훅: 웹훅 명령어를 보시려면 {prefix}웹훅명령어 를 입력하세요**\n"
+        f"> **8️⃣ 번역: 원하는 언어로 번역하려면 {prefix}번역 번역할 언어 번역할 문장 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -277,7 +278,6 @@ async def 관리(ctx):
         f"> **5️⃣ 역할 부여/회수: 역할을 부여 또는 회수하려면 {prefix}부여/회수 역할 이름 을 입력하세요**\n"
         f"> **6️⃣ 티켓 생성/삭제: 티켓을 생성 또는 삭제하려면 {prefix}티켓 생성/삭제 유저멘션 을 입력하세요 **\n"
         f"> **7️⃣ 티켓 열기/닫기: 티켓을 열거나 닫으려 {prefix}티켓 열기/닫기 유저멘션 을 입력하세요**\n"
-        f"> **8️⃣ 번역: 원하는 언어로 번역하려면 {prefix}번역 번역할 언어 번역할 문장 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -680,12 +680,70 @@ async def 번역(ctx, target_lang: str, *, text: str):
 @bot.command()
 async def 웹훅명령어(ctx):
     message = (
-        "## 도움말\n"
+        "## 웹훅명령어\n"
         f"> **1️⃣ 웹훅: 웹훅 메시지를 보내려면 {prefix}웹훅 웹훅주소 메시지 를 입력하세요**\n"
         f"> **2️⃣ 내웹훅: 내 웹훅으로 메시지를 보내려면 {prefix}내웹훅 메시지 를 입력하세요**\n"
         f"> **3️⃣ 테러: 웹훅 테러를 하시려면 {prefix}테러 웹훅주소 보낼 개수 보낼 메시지 를 입력하세요**\n"
     )
     await ctx.reply(message)
+    
+# 웹훅 메시지 전송 명령어
+@bot.command()
+async def 웹훅(ctx, webhook_url: str, *, message: str):
+    if message.strip() == "":
+        await ctx.reply("빈 메시지는 보낼 수 없어요!")
+        return
+    
+    try:
+        data = {"content": message}
+        response = requests.post(webhook_url, json=data)
+        if response.status_code == 204:
+            await ctx.reply("메시지가 성공적으로 전송되었습니다.")
+        else:
+            await ctx.reply(f"메시지 전송 실패: {response.status_code}")
+    except Exception as e:
+        await ctx.reply(f"오류 발생: {str(e)}")
+        
+# 내 웹훅 메시지 전송 명령어
+@bot.command()
+async def 내웹훅(ctx, *, message: str):
+    if message.strip() == "":
+        await ctx.reply("빈 메시지는 보낼 수 없어요!")
+        return
+    
+    try:
+        data = {"content": message}
+        response = requests.post(WEB, json=data)
+        if response.status_code == 204:
+            await ctx.reply("메시지가 성공적으로 전송되었습니다.")
+        else:
+            await ctx.reply(f"메시지 전송 실패: {response.status_code}")
+    except Exception as e:
+        await ctx.reply(f"오류 발생: {str(e)}")
+        
+# 웹훅테러 명령어
+@bot.command()
+async def 테러(ctx, webhook_url: str, count: int, *, message: str):
+    if message.strip() == "":
+        await ctx.reply("빈 메시지는 보낼 수 없어요!")
+        return
+
+    if count <= 0:
+        await ctx.reply("보낼 갯수는 1 이상이어야 합니다.")
+        return
+
+    data = {"content": message}
+    success_count = 0
+
+    for _ in range(count):
+        response = requests.post(webhook_url, json=data)
+        if response.status_code == 204:
+            success_count += 1
+        else:
+            await ctx.reply(f"메시지 전송 실패: {response.status_code}")
+            return
+
+    await ctx.reply(f"{success_count}개의 메시지가 성공적으로 전송되었습니다.")
 
 # 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
 @bot.command()
