@@ -34,6 +34,7 @@ BS_API_TOKEN = config['api']
 URL = config['url']
 prefix = config["prefix"]
 TAG = config["tag"]
+WEB = config["mywebhook"]
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix=config["prefix"], self_bot=True, intents=intents)
@@ -251,6 +252,7 @@ async def 도구(ctx):
         f"> **4️⃣ gpt: gpt를 사용하시려면 {prefix}gpt 내용 을 입력하세요**\n"
         f"> **5️⃣ 구글: 구글 검색을 하시려면 {prefix}구글 내용 을 입력하세요**\n"
         f"> **6️⃣ 홍보: 홍보 기능을 이용하시려면 {prefix}홍보 를 입력하세요**\n" # config.json에 있는 promotion에 링크나 내용 작성
+        f"> **7️⃣ 웹훅: 웹훅 명령어를 보시려면 {prefix}웹훅명령어 를 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -674,6 +676,16 @@ async def 번역(ctx, target_lang: str, *, text: str):
 
     except Exception as e:
         await ctx.reply(f'번역 중 오류가 발생했습니다: {e}')
+        
+@bot.command()
+async def 웹훅명령어(ctx):
+    message = (
+        "## 도움말\n"
+        f"> **1️⃣ 웹훅: 웹훅 메시지를 보내려면 {prefix}웹훅 웹훅주소 메시지 를 입력하세요**\n"
+        f"> **2️⃣ 내웹훅: 내 웹훅으로 메시지를 보내려면 {prefix}내웹훅 메시지 를 입력하세요**\n"
+        f"> **3️⃣ 테러: 웹훅 테러를 하시려면 {prefix}테러 웹훅주소 보낼 개수 보낼 메시지 를 입력하세요**\n"
+    )
+    await ctx.reply(message)
 
 # 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
 @bot.command()
