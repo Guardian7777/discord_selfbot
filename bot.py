@@ -401,7 +401,7 @@ async def 티켓(ctx, action: str, *, member: discord.Member):
         else:
             await ctx.reply(f"{member.mention}님의 티켓 채널을 찾을 수 없습니다.")
 
-    if action == "닫기":
+    elif action == "닫기":
         # 티켓 채널에서 멤버 권한 제거
         channel_name = f"티켓-{member.name}-{member.discriminator}"
         channel = discord.utils.get(ctx.guild.channels, name=channel_name)
