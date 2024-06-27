@@ -48,17 +48,6 @@ async def 핑(ctx):
     await ctx.reply(f"퐁! 지연시간: {round(bot.latency * 1000)} ms")
 
 @bot.command()
-async def 활동상태(ctx, *, activity_name: str):
-    try:
-        config['activity'] = activity_name
-        save_config(config)
-        activity = discord.Game(name=activity_name)
-        await bot.change_presence(activity=activity)
-        await ctx.reply(f'활동상태를 {activity_name}으로 변경하였습니다.')
-    except Exception as e:
-        print(e)
-
-@bot.command()
 async def 도움말(ctx):
     message = (
         "## 도움말\n"
@@ -1683,6 +1672,17 @@ async def 접두사(ctx, new_prefix: str):
 async def 내별명(ctx, new_nickname: str):
     await ctx.author.edit(nick=new_nickname)
     await ctx.reply(f"본인의 별명을 '{new_nickname}'으로 변경했습니다.")
+    
+@bot.command()
+async def 활동상태(ctx, *, activity_name: str):
+    try:
+        config['activity'] = activity_name
+        save_config(config)
+        activity = discord.Game(name=activity_name)
+        await bot.change_presence(activity=activity)
+        await ctx.reply(f'활동상태를 {activity_name}으로 변경하였습니다.')
+    except Exception as e:
+        print(e)
 
 if __name__ == '__main__':
     bot.run(TOKEN, bot=False)
