@@ -188,7 +188,7 @@ async def 강화(ctx, item_name: str):
         # 강화 실패
         if current_level > 0:
             user_enhance_records[user_id][item_name]["enhance_level"] -= 1
-            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! {current_level}강으로 강화 레벨이 감소하였습니다.")
+            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! {current_level - 1}강으로 강화 레벨이 감소하였습니다.")
         else:
             await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! 최하 강화 레벨입니다.")
 
