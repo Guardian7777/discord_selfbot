@@ -6,6 +6,5 @@ bcsfe-discord
 numpy
 matplotlib
 pytz
-openai
 googlesearch-python
 googletrans==4.0.0-rc1
