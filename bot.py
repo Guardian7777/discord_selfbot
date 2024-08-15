@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from datetime import datetime
 import pytz
-import openai
 from googlesearch import search
 from googletrans import Translator
 
@@ -49,6 +48,7 @@ async def 핑(ctx):
 
 @bot.command()
 async def 도움말(ctx):
+    prefix = config["prefix"]
     message = (
         "## 도움말\n"
         f"> **1️⃣ 채팅: 채팅을 하려면 {prefix}채팅을 입력하세요**\n"
@@ -62,6 +62,7 @@ async def 도움말(ctx):
 # 본인 메시지 관리 기능, 밈 보내기 기능 있음 원하는 밈 디코로 보내주면 추가함
 @bot.command()
 async def 채팅(ctx):
+    prefix = config["prefix"]
     message = (
         "## 채팅 메뉴\n"
         f"> **1️⃣ 도배: 도배를 하려면 {prefix}도배 갯수 내용 을 입력하세요**\n"
@@ -233,6 +234,7 @@ async def 강화목록(ctx):
 # 각종 도구
 @bot.command()
 async def 도구(ctx):
+    prefix = config["prefix"]
     message = (
         "## 도구 메뉴\n"
         f"> **1️⃣ 관리: 서버 관리 기능을 이용하려면 {prefix}관리 를 입력하세요**\n"
@@ -455,9 +457,9 @@ async def 통조림자충(ctx, 이어하기코드, 인증번호, 통조림):
             gv = config['version']
             cf = int(통조림)
             
-            downloadfile(tc, cc, country, gv)
+            BCSFE_Python.downloadfile(tc, cc, country, gv)
             time.sleep(0.1)
-            save_stats["cat_food"]["Value"] = cf
+            BCSFE_Python.save_stats["cat_food"]["Value"] = cf
             time.sleep(0.1)
             processes = []
             placeholder = (
@@ -467,7 +469,7 @@ async def 통조림자충(ctx, 이어하기코드, 인증번호, 통조림):
             if os.path.exists("account.txt"):
                 os.remove("account.txt")
             open("account.txt", "w+", encoding="utf-8").write(placeholder)
-            uploadsave()
+            BCSFE_Python.uploadsave()
             await ctx.message.edit(content="**작업을 시작합니다.**\n**계정이 업로드 되었습니다.**")
             with open("account.txt", "r") as f:
                 output_text = f.read()
@@ -709,6 +711,7 @@ async def 테러(ctx, webhook_url: str, count: int, *, message: str):
 # 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
 @bot.command()
 async def 브롤(ctx):
+    prefix = config["prefix"]
     message = (
         "## 브롤스타즈 API : 내 계정을 확인하려면 명령어 앞에 내 를 입력하세요\n"
         f"> **1️⃣ 정보: 기본적인 정보를 보려면 {prefix}정보 #플레이어 태그 를 입력하세요**\n"
@@ -742,7 +745,7 @@ def get_player_detail_info(player_tag):
         return None
 
 # 한글 폰트 설정
-font_path = r"폰트 경로 지정" # 아이폰 쓰면 앞에 한거처럼 ㄱㄱ
+font_path = r"NanumGothic.ttf" # 아이폰 쓰면 앞에 한거처럼 ㄱㄱ
 font_prop = fm.FontProperties(fname=font_path)
 plt.rcParams['font.family'] = font_prop.get_name()
 
@@ -1379,6 +1382,7 @@ async def 가격수정(ctx, coin: str, price: float):
 
 @bot.command()
 async def 설정(ctx):
+    prefix = config["prefix"]
     message = (
         "## 설정\n"
         f"> **1️⃣ 접두사 변경: 접두사를 변경하려면 {prefix}접두사 새접두사 을 입력하세요**\n"

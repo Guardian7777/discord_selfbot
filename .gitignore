@@ -123,6 +123,7 @@ celerybeat.pid
 
 # Environments
 .env
+personnel_config.json
 .venv
 env/
 venv/
