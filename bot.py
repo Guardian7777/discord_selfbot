@@ -247,6 +247,7 @@ async def 도구(ctx):
         f"> **5️⃣ 홍보: 홍보 기능을 이용하시려면 {prefix}홍보 를 입력하세요**\n" # config.json에 있는 promotion에 링크나 내용 작성
         f"> **6️⃣ 웹훅: 웹훅 명령어를 보시려면 {prefix}웹훅명령어 를 입력하세요**\n"
         f"> **7️⃣ 번역: 원하는 언어로 번역하려면 {prefix}번역 번역할 언어 번역할 문장 을 입력하세요**\n"
+        f"> **8️⃣ 뱃지 : 원하는 뱃지로 변경하시려면 {prefix}뱃지 [Bravery / Brilliance / Balance] 를 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1233,6 +1234,7 @@ async def 코인(ctx):
         f"> **5️⃣ 잔고수정: 잔고를 수정하려면 {prefix}잔고수정 <돈> 을 입력하세요(수익률도 변경되니 조심)**\n"
         f"> **6️⃣ 가격수정: 코인의 가격을 수정하려면 {prefix}가격수정 <코인 이름> <갯수> 를 입력하세요**\n"
         f"> **7️⃣ 업데이트: 코인을 강제로 업데이트하려면 {prefix}업데이트 를 입력하세요**\n"
+        f"> **8️⃣ 코인그래프: 코인의 그래프를 확인하려면 {prefix}코인그래프 <코인 이름> 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1426,6 +1428,9 @@ async def 업데이트(ctx):
     except Exception as e:
         await ctx.reply("코인 가격 업데이트 중 오류가 발생했습니다.")
 
+
+
+
 @bot.command()
 async def 도박(ctx):
     prefix = config["prefix"]
@@ -1592,6 +1597,41 @@ async def 활동상태(ctx, *, activity_name: str):
         await ctx.reply(f'활동상태를 {activity_name}으로 변경하였습니다.')
     except Exception as e:
         print(e)
+
+@bot.command()  # Hypesquad 뱃지 변경, 레이트 리밋 가끔 걸림 ㅇㅅㅇ
+async def 뱃지(ctx, arg:str):
+    if arg == 'Bravery':
+        hypesquad = '1'
+    elif arg == 'Brilliance':
+        hypesquad = '2'
+    elif arg == 'Balance':
+        hypesquad = '3'
+    else:
+        await ctx.send('> **`올바른 뱃지 이름을 입력해주세요!`**')
+        return
+
+    headers = {
+        'authorization': TOKEN
+    }
+
+    body = {
+        'house_id': hypesquad
+    }
+
+    meResponse = requests.get('https://canary.discordapp.com/api/v6/users/@me', headers=headers)
+
+    response = requests.post('https://discord.com/api/v9/hypesquad/online', headers=headers, json=body)
+
+    if response.status_code == 204:
+        await ctx.reply(f'> **성공적으로 뱃지를 {arg}로 변경하였습니다!**')
+
+    elif response.status_code == 401:
+        await ctx.reply('> **`401 error`**')
+
+    elif response.status_code == 429:
+        await ctx.reply('> **`레이트 리밋, 잠시후 다시 시도해주세요 (429)`**')
+    else:
+        await ctx.reply('> **`알수없는 오류`**')
 
 if __name__ == '__main__':
     bot.run(TOKEN, bot=False)
