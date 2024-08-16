@@ -53,11 +53,12 @@ async def 도움말(ctx):
     prefix = config["prefix"]
     message = (
         "## 도움말\n"
-        f"> **1️⃣ 채팅: 채팅을 하려면 {prefix}채팅을 입력하세요**\n"
-        f"> **2️⃣ 도구: 도구를 보려면 {prefix}도구를 입력하세요**\n"
-        f"> **3️⃣ 브롤: 브롤 관련 메뉴를 보려면 {prefix}브롤을 입력하세요**\n"
-        f"> **4️⃣ 코인: 코인 관련 메뉴를 보려면 {prefix}코인을 입력하세요**\n"
-        f"> **5️⃣ 설정: 설정을 변경하려면 {prefix}설정을 입력하세요**\n"
+        f"> **1️⃣ 채팅: 채팅을 하려면 {prefix}채팅 을 입력하세요**\n"
+        f"> **2️⃣ 도구: 도구를 보려면 {prefix}도구 를 입력하세요**\n"
+        f"> **3️⃣ 브롤: 브롤 관련 메뉴를 보려면 {prefix}브롤 을 입력하세요**\n"
+        f"> **4️⃣ 코인: 코인 관련 메뉴를 보려면 {prefix}코인 을 입력하세요**\n"
+        f"> **5️⃣ 도박: 도박 관련 메뉴를 보려면 {prefix}도박 을 입력하세요**\n"
+        f"> **6️⃣ 설정: 설정을 변경하려면 {prefix}설정 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1291,6 +1292,13 @@ async def update_coin_prices():
 
 bot.loop.create_task(update_coin_prices())
 
+async def save_wallet():
+    while True:
+        save_config(config)
+        await asyncio.sleep(60)
+    
+bot.loop.create_task(save_wallet())
+
 # 사용자의 지갑을 초기화하는 함수
 async def initialize_wallet(user_id):
     user_wallets[user_id] = {"balance": 100000000, "coins": {}}
@@ -1304,7 +1312,6 @@ user_wallets = config.get("user_wallets")
 
 @bot.command()
 async def 지갑(ctx):
-    user_wallets = config.get("user_wallets")
     user_id = str(ctx.author.id)
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
@@ -1327,19 +1334,17 @@ async def 지갑(ctx):
     message += f"\n💼 **총 잔고**: ${total_balance:.2f}\n"
     message += f"💵 **투자한 금액**: ${total_investment:.2f}\n"
     message += f"📈 **총 수익률**: {profit_percentage:.2f}%"
-    save_config(config)
     await ctx.reply(message)
 
 @bot.command()
 async def 코인목록(ctx):
-    message = "코인 목록:\n"
+    message = "📈 | 📉 **코인 목록**:\n"
     for coin, price in coin_prices.items():
-        message += f"{coin}: ${price}\n"
+        message += f"`{coin}` : **${price}**\n"
     await ctx.reply(message)
 
 @bot.command()
 async def 구매(ctx, coin: str, quantity: int):
-    user_wallets = config.get("user_wallets")
     user_id = str(ctx.author.id)
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
@@ -1362,14 +1367,12 @@ async def 구매(ctx, coin: str, quantity: int):
 
 @bot.command()
 async def 잔고수정(ctx, amount: int):
-    user_wallets = config.get("user_wallets")
     user_id = str(ctx.author.id)
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
     wallet = user_wallets[user_id]
     previous_balance = wallet["balance"]
     wallet["balance"] = amount
-    save_config(config)
     await ctx.reply(f"{ctx.author.mention}, 잔고가 {amount}로 수정되었습니다.")
 
     # 이전 잔고를 기준으로 수익률 다시 계산
@@ -1387,10 +1390,10 @@ async def 잔고수정(ctx, amount: int):
     # 이전 잔고에서 수정된 잔고의 차이를 수익에 반영하지 않음
     profit_percentage -= ((previous_balance - INITIAL_BALANCE) / INITIAL_BALANCE) * 100
     user_wallets[user_id]["profit_percentage"] = profit_percentage
+    save_config(config)
 
 @bot.command()
 async def 판매(ctx, coin: str, quantity: int):
-    user_wallets = config.get("user_wallets")
     user_id = str(ctx.author.id)
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
@@ -1422,6 +1425,138 @@ async def 업데이트(ctx):
         await ctx.reply("코인 가격이 업데이트되었습니다.")
     except Exception as e:
         await ctx.reply("코인 가격 업데이트 중 오류가 발생했습니다.")
+
+@bot.command()
+async def 도박(ctx):
+    prefix = config["prefix"]
+    message = (
+        "## 도박\n"
+        f"> **1️⃣ 확률도박: 확률도박을 하려면 {prefix}확률도박 [금액] 을 입력하세요**\n"
+        f"> **2️⃣ 바카라: 바카라를 하려면 {prefix}바카라 [플레이어 / 뱅커 / 타이] [금액] 을 입력하세요**\n"
+    )
+    await ctx.reply(message)
+
+@bot.command()
+async def 확률도박(ctx, amount: str):
+    user_id = str(ctx.author.id)
+    if user_id not in user_wallets:
+        await initialize_wallet(user_id)
+    wallet = user_wallets[user_id]
+    balance = wallet["balance"]
+    try:
+        amount = int(amount)
+    except:
+        await ctx.reply("금액은 정수로 입력해야 합니다.")
+        return
+    if amount > balance:
+        await ctx.reply("잔고가 부족합니다.")
+        return
+    elif amount <= 0:
+        await ctx.reply("금액은 0보다 커야 합니다.")
+        return
+    else:
+        wallet["balance"] -= amount
+        await ctx.reply(f"❓ **도박 진행중...**\n {amount}달러로 확률도박을 시작합니다.\n 확률 : 50%")
+        await asyncio.sleep(2)
+        if random.random() < 0.5:
+            wallet["balance"] += amount * 2
+            await ctx.reply(f"✅ **성공!** {ctx.author.mention}님이 도박에 성공하여 {amount * 2} 달러를 얻었습니다.")
+        else:
+            await ctx.reply(f"📛 **실패** {ctx.author.mention}님이 도박에 실패하여 {amount} 달러를 잃었습니다.")
+        save_config(config)
+
+# 카드 덱 생성
+def create_deck():
+    suits = ['하트', '다이아몬드', '클로버', '스페이드']
+    values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+    deck = [(value, suit) for value in values for suit in suits]
+    random.shuffle(deck)
+    return deck
+
+# 카드 점수 계산
+def card_value(card):
+    value = card[0]
+    if value in ['J', 'Q', 'K']:
+        return 0
+    elif value == 'A':
+        return 1
+    else:
+        return int(value)
+
+# 점수 계산
+def calculate_score(hand):
+    score = sum(card_value(card) for card in hand) % 10
+    return score
+
+@bot.command()
+async def 바카라(ctx, bet: str, amount: str):
+    if bet not in ['플레이어', '뱅커', '타이']:
+        await ctx.reply("베팅은 '플레이어', '뱅커', 또는 '타이' 중 하나로 해야 합니다.")
+        return
+    try:
+        amount = int(amount)
+    except:
+        await ctx.reply("금액은 정수로 입력해야 합니다.")
+        return
+
+    user_id = str(ctx.author.id)
+    if user_id not in user_wallets:
+        await initialize_wallet(user_id)
+    wallet = user_wallets[user_id]
+    balance = wallet["balance"]
+    if amount > balance:
+        await ctx.reply("잔고가 부족합니다.")
+        return
+    elif amount <= 0:
+        await ctx.reply("금액은 0보다 커야 합니다.")
+        return
+    
+    wallet["balance"] -= amount
+    
+    deck = create_deck()
+    
+    # 플레이어와 뱅커에게 두 장의 카드를 분배
+    player_hand = [deck.pop(), deck.pop()]
+    banker_hand = [deck.pop(), deck.pop()]
+
+    player_score = calculate_score(player_hand)
+    banker_score = calculate_score(banker_hand)
+
+    player_result = (
+        f"😀 **플레이어의 카드** : {player_hand[0][0]} {player_hand[0][1]}, {player_hand[1][0]} {player_hand[1][1]} __**(점수: {player_score})**__\n"
+    )
+    banker_result = (
+        f"💵 **뱅커의 카드** : {banker_hand[0][0]} {banker_hand[0][1]}, {banker_hand[1][0]} {banker_hand[1][1]} __**(점수: {banker_score})**__\n"
+    )
+
+    # 승자 판정
+    if player_score > banker_score:
+        winner = '플레이어'
+    elif player_score < banker_score:
+        winner = '뱅커'
+    else:
+        winner = '타이'
+
+    result_message = f"**결과: {winner} 승리!**\n\n"
+
+    # 베팅 결과
+    if bet == '타이' and winner == '타이':
+        result_message += f"✅ **축하합니다! {winner}에 베팅하여 이겼습니다!**\n 🎉 **{amount*9} 달러를 얻었습니다!!! (9배)**"
+        wallet["balance"] += amount * 9
+    elif bet == winner:
+        result_message += f"✅ **축하합니다! {winner}에 베팅하여 이겼습니다!**\n 🎉 **{amount*2} 달러를 얻었습니다!**"
+        wallet["balance"] += amount * 2
+    else:
+        result_message += f"📛 **아쉽게도 {bet}에 베팅했지만 졌습니다...**\n 😭 **{amount} 달러를 잃었습니다...**"
+
+    player = await ctx.reply("플레이어의 카드를 뽑는 중입니다....")
+    await asyncio.sleep(1.5)
+    await player.edit(content=player_result) 
+    banker = await ctx.reply("뱅커의 카드를 뽑는 중입니다....")
+    await asyncio.sleep(1.5)
+    await banker.edit(content=banker_result)
+    await ctx.reply(result_message)
+    save_config(config)
 
 @bot.command()
 async def 설정(ctx):
