@@ -15,6 +15,8 @@ from datetime import datetime
 import pytz
 from googlesearch import search
 from googletrans import Translator
+import pyupbit
+import math
 
 CONFIG = r"콘픽경로" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
 
@@ -1217,9 +1219,10 @@ def save_config(config):
     with open(CONFIG, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=4)
 
-# 코인 모의 투자 기능 봇 껐다 키면 잔고 초기화됨 초기 잔고는 1억 달러(수정 가능)
+# 코인 모의 투자 기능 봇 껐다 키면 잔고 초기화됨 초기 잔고는 1억 원(수정 가능)
 @bot.command()
 async def 코인(ctx):
+    prefix = config["prefix"]
     message = (
         "## 코인 모의 투자\n"
         f"> **1️⃣ 지갑: 잔고를 확인하려면 {prefix}지갑 을 입력하세요**\n"
@@ -1228,6 +1231,7 @@ async def 코인(ctx):
         f"> **4️⃣ 코인판매: 코인을 판매하려면 {prefix}판매 <코인 이름> <갯수> 를 입력하세요**\n"
         f"> **5️⃣ 잔고수정: 잔고를 수정하려면 {prefix}잔고수정 <돈> 을 입력하세요(수익률도 변경되니 조심)**\n"
         f"> **6️⃣ 가격수정: 코인의 가격을 수정하려면 {prefix}가격수정 <코인 이름> <갯수> 를 입력하세요**\n"
+        f"> **7️⃣ 업데이트: 코인을 강제로 업데이트하려면 {prefix}업데이트 를 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1235,48 +1239,73 @@ async def 코인(ctx):
 coin_prices = {
     "BTC": 50000,
     "ETH": 3000,
+    "TRX": 0.1,
     "XRP": 1,
-    "LTC": 150,
+#    "LTC": 150,
     "ADA": 2,
-    "DOT": 30,
-    "LINK": 25,
+#    "DOT": 30,
+#    "LINK": 25,
     "BCH": 600,
-    "XLM": 0.5,
-    "BSV": 300,
+#    "XLM": 0.5,
+#    "BSV": 300,
     "ETC": 50,
-    "USDT": 1,
     "SOL": 200,
     "DOGE": 0.3,
-    "MATIC": 1,
-    "ETH2": 2500
+#    "MATIC": 1,
+#    "ETH2": 2500
 }
+
+async def force_update_coin_prices():
+    coin_prices["BTC"] = pyupbit.get_current_price('USDT-BTC')
+    coin_prices["ETH"] = pyupbit.get_current_price('USDT-ETH')
+    coin_prices["TRX"] = pyupbit.get_current_price('USDT-TRX')
+    coin_prices["XRP"] = pyupbit.get_current_price('USDT-XRP')
+    coin_prices["ADA"] = pyupbit.get_current_price('USDT-ADA')
+    coin_prices["BCH"] = pyupbit.get_current_price('USDT-BCH')
+    coin_prices["ETC"] = pyupbit.get_current_price('USDT-ETC')
+    coin_prices["SOL"] = pyupbit.get_current_price('USDT-SOL')
+    coin_prices["DOGE"] = pyupbit.get_current_price('USDT-DOGE')
+    return
 
 # 코인 가격을 10초마다 변경하는 함수
 async def update_coin_prices():
+
     while True:
-        for coin in coin_prices:
-            # 무작위로 가격 변경 (-10% ~ +10%)
-            change = random.uniform(-0.1, 0.1)
-            coin_prices[coin] *= (1 + change)
-        # 소수점 한 자리까지만 표시
-            coin_prices[coin] = round(coin_prices[coin], 1)
-        await asyncio.sleep(10)
+        coin_prices["BTC"] = pyupbit.get_current_price('USDT-BTC')
+        coin_prices["ETH"] = pyupbit.get_current_price('USDT-ETH')
+        coin_prices["TRX"] = pyupbit.get_current_price('USDT-TRX')
+        coin_prices["XRP"] = pyupbit.get_current_price('USDT-XRP')
+#        coin_prices["LTC"] = pyupbit.get_current_price('KRW-LTC') # LTC는 upbit에서 상장이 안되서 임시제거
+        coin_prices["ADA"] = pyupbit.get_current_price('USDT-ADA')
+#        coin_prices["DOT"] = pyupbit.get_current_price('KRW-DOT') # DOT는 upbit에서 상장이 안되서 임시제거
+#        coin_prices["LINK"] = pyupbit.get_current_price('KRW-LINK') # LINK는 upbit에서 상장이 안되서 임시제거
+        coin_prices["BCH"] = pyupbit.get_current_price('USDT-BCH')
+#        coin_prices["XLM"] = pyupbit.get_current_price('KRW-XLM')
+#        coin_prices["BSV"] = pyupbit.get_current_price('KRW-BSV')
+        coin_prices["ETC"] = pyupbit.get_current_price('USDT-ETC')
+        coin_prices["SOL"] = pyupbit.get_current_price('USDT-SOL')
+        coin_prices["DOGE"] = pyupbit.get_current_price('USDT-DOGE')
+#        coin_prices["MATIC"] = pyupbit.get_current_price('KRW-MATIC')
+#        coin_prices["ETH2"] = pyupbit.get_current_price('KRW-ETH2')
+        await asyncio.sleep(30)
 
 bot.loop.create_task(update_coin_prices())
 
 # 사용자의 지갑을 초기화하는 함수
 async def initialize_wallet(user_id):
     user_wallets[user_id] = {"balance": 100000000, "coins": {}}
+    save_config(config)
 
 # 사용자의 초기 잔고
 INITIAL_BALANCE = 100000000
 
 # 사용자의 지갑
-user_wallets = {}
+user_wallets = config.get("user_wallets")
 
 @bot.command()
 async def 지갑(ctx):
-    user_id = ctx.author.id
+    user_wallets = config.get("user_wallets")
+    user_id = str(ctx.author.id)
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
     wallet = user_wallets[user_id]
@@ -1298,7 +1327,7 @@ async def 지갑(ctx):
     message += f"\n💼 **총 잔고**: ${total_balance:.2f}\n"
     message += f"💵 **투자한 금액**: ${total_investment:.2f}\n"
     message += f"📈 **총 수익률**: {profit_percentage:.2f}%"
-
+    save_config(config)
     await ctx.reply(message)
 
 @bot.command()
@@ -1310,7 +1339,8 @@ async def 코인목록(ctx):
 
 @bot.command()
 async def 구매(ctx, coin: str, quantity: int):
-    user_id = ctx.author.id
+    user_wallets = config.get("user_wallets")
+    user_id = str(ctx.author.id)
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
     wallet = user_wallets[user_id]
@@ -1327,16 +1357,19 @@ async def 구매(ctx, coin: str, quantity: int):
         wallet["coins"][coin] += quantity
     else:
         wallet["coins"][coin] = quantity
+    save_config(config)
     await ctx.reply(f"{ctx.author.mention}, {coin}을(를) {quantity}개 구매하였습니다.")
 
 @bot.command()
 async def 잔고수정(ctx, amount: int):
-    user_id = ctx.author.id
+    user_wallets = config.get("user_wallets")
+    user_id = str(ctx.author.id)
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
     wallet = user_wallets[user_id]
     previous_balance = wallet["balance"]
     wallet["balance"] = amount
+    save_config(config)
     await ctx.reply(f"{ctx.author.mention}, 잔고가 {amount}로 수정되었습니다.")
 
     # 이전 잔고를 기준으로 수익률 다시 계산
@@ -1357,7 +1390,8 @@ async def 잔고수정(ctx, amount: int):
 
 @bot.command()
 async def 판매(ctx, coin: str, quantity: int):
-    user_id = ctx.author.id
+    user_wallets = config.get("user_wallets")
+    user_id = str(ctx.author.id)
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
     wallet = user_wallets[user_id]
@@ -1370,6 +1404,7 @@ async def 판매(ctx, coin: str, quantity: int):
     price = coin_prices[coin] * quantity
     wallet["balance"] += price
     wallet["coins"][coin] -= quantity
+    save_config(config)
     await ctx.reply(f"{ctx.author.mention}, {coin}을(를) {quantity}개 판매하였습니다. 총 {price}달러를 획득하였습니다.")
 
 @bot.command()
@@ -1379,6 +1414,14 @@ async def 가격수정(ctx, coin: str, price: float):
         return
     coin_prices[coin] = price
     await ctx.reply(f"{coin}의 가격이 {price}달러로 수정되었습니다.")
+
+@bot.command()
+async def 업데이트(ctx):
+    try:
+        await force_update_coin_prices()
+        await ctx.reply("코인 가격이 업데이트되었습니다.")
+    except Exception as e:
+        await ctx.reply("코인 가격 업데이트 중 오류가 발생했습니다.")
 
 @bot.command()
 async def 설정(ctx):
