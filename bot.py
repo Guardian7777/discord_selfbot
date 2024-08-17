@@ -1709,7 +1709,7 @@ _____________/_ __ \_____________
             ```
             ''')
 
-@bot.command()  # Measure Dick size command
+@bot.command(aliases=['자지'])  # Measure Dick size command
 async def dick(ctx, user: discord.Member = None):
     size = int(random.randint(0, 30))
     amount = '='*size
