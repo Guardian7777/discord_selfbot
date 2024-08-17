@@ -1310,6 +1310,7 @@ async def 도박(ctx):
         f"> **2️⃣ 바카라: 바카라를 하려면 {prefix}바카라 [플레이어 / 뱅커 / 타이] [금액] 을 입력하세요**\n"
         f"> **3️⃣ 블랙잭: 블랙잭을 하려면 {prefix}블랙잭 [금액] 을 입력하세요**\n"
         f"> **4️⃣ 슬롯머신: 슬롯머신을 돌리려면 {prefix}슬롯머신 [금액] 을 입력하세요**\n"
+        f"> **5️⃣ 슬롯머신: 슬롯머신을 돌리려면 {prefix}슬롯머신 [금액] [이지 / 노말 / 하드] 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1537,8 +1538,9 @@ async def 바카라(ctx, bet: str, amount: str):
     await ctx.reply(result_message)
     save_config(config)
 
+
 @bot.command()
-async def 슬롯머신(ctx, amount: int):
+async def 슬롯머신(ctx, amount: int, difficulty: str = "이지"):
     user_id = str(ctx.author.id)
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
@@ -1554,28 +1556,45 @@ async def 슬롯머신(ctx, amount: int):
 
     wallet["balance"] -= amount
 
+    
     # 슬롯머신 심볼
-    symbols = ["🍒", "🍋", "🍉", "🍇", "🍓", "⭐", "🔔"]
+    #symbols = ["🍒", "🍋", "🍉", "🍇", "🍓", "⭐", "🔔"]
+    if difficulty == "하드":
+        symbols = ["🍒", "🍋", "🍉", "🍇", "🍓", "⭐", "🔔"]
+        jackpot = 7
+        win = 3
+    elif difficulty == "노말":
+        symbols = ["🍒", "🍋", "🍉", "🍇", "🍓"]
+        jackpot = 6
+        win = 2
+    elif difficulty == "이지":
+        symbols = ["🍒", "🍋", "🍉", "🍇"]
+        jackpot = 4
+        win = 1.5
+    else:
+        await ctx.reply("> **난이도는 이지, 노말, 하드 중 하나로 설정해야 합니다.**")
+        return
     result = [random.choice(symbols) for _ in range(3)]
     hidden_result = ["⬜", "⬜", "⬜"]
 
-    message = await ctx.reply(f"🎰 슬롯머신 결과: {' '.join(hidden_result)}")
+    message = await ctx.reply(f"> 🎰 **슬롯머신 결과:** {' '.join(hidden_result)}\n > `난이도 : {difficulty}`")
+    await asyncio.sleep(3)
 
     for i in range(3):
         hidden_result[i] = result[i]
-        await message.edit(content=f"🎰 슬롯머신 결과: {' '.join(hidden_result)}")
+        await message.edit(content=f"> 🎰 **슬롯머신 결과:** {' '.join(hidden_result)}")
         await asyncio.sleep(1)
 
     # 결과 계산
     if result[0] == result[1] == result[2]:
-        winnings = amount * 7
-        await ctx.reply(f"잭팟! {winnings}원을 획득했습니다!")
+        winnings = amount * jackpot
+        await ctx.reply(f"🎉 **축하합니다! 잭팟! {winnings}달러를 획득했습니다!**")
     elif result[0] == result[1] or result[1] == result[2] or result[0] == result[2]:
-        winnings = amount * 3
-        await ctx.reply(f"축하합니다! 2개가 일치했습니다! {winnings}원을 획득했습니다!")
+        winnings = amount * win
+        await ctx.reply(f"🎉 **축하합니다! 동일한 심볼 2개를 맞춰 {winnings}달러 획득했습니다!**")
     else:
         winnings = 0
-        await ctx.reply("아쉽게도 일치하지 않습니다.")
+        await ctx.reply("😭 **아쉽게도 아무것도 맞추지 못했습니다...**")
 
     wallet["balance"] += winnings
     save_config(config)
