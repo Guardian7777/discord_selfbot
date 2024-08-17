@@ -11,17 +11,12 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-from PIL import Image
 from datetime import datetime
 import pytz
 from googlesearch import search
 from googletrans import Translator
-import pyupbit
-import math
-import base64
-import socket
 
-CONFIG = r"personnel_config.json" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
+CONFIG = "./school.json" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
 
 def load_config():
     with open(CONFIG, 'r', encoding='utf-8') as f:
@@ -40,6 +35,7 @@ prefix = config["prefix"]
 TAG = config["tag"]
 WEB = config["mywebhook"]
 
+
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix=config["prefix"], self_bot=True, intents=intents)
 
@@ -52,28 +48,38 @@ async def 핑(ctx):
     await ctx.reply(f"퐁! 지연시간: {round(bot.latency * 1000)} ms")
 
 @bot.command()
+async def 활동상태(ctx, *, activity_name: str):
+    try:
+        config['activity'] = activity_name
+        save_config(config)
+        activity = discord.Game(name=activity_name)
+        await bot.change_presence(activity=activity)
+        await ctx.reply(f'활동상태를 {activity_name}으로 변경하였습니다.')
+    except Exception as e:
+        print(e)
+
+@bot.command()
 async def 도움말(ctx):
-    prefix = config["prefix"]
     message = (
         "## 도움말\n"
-        f"> **1️⃣ 채팅: 채팅을 하려면 {prefix}채팅 을 입력하세요**\n"
-        f"> **2️⃣ 도구: 도구를 보려면 {prefix}도구 를 입력하세요**\n"
-        f"> **3️⃣ 브롤: 브롤 관련 메뉴를 보려면 {prefix}브롤 을 입력하세요**\n"
-        f"> **4️⃣ 코인: 코인 관련 메뉴를 보려면 {prefix}코인 을 입력하세요**\n"
-        f"> **5️⃣ 도박: 도박 관련 메뉴를 보려면 {prefix}도박 을 입력하세요**\n"
-        f"> **6️⃣ 설정: 설정을 변경하려면 {prefix}설정 을 입력하세요**\n"
-        f"> **7️⃣ 기타: 기타 명령어를 보려면 {prefix}기타 를 입력하세요**\n"
+        f"> **1️⃣ 채팅: 채팅을 하려면 {prefix}채팅을 입력하세요**\n"
+        f"> **2️⃣ 도구: 도구를 보려면 {prefix}도구를 입력하세요**\n"
+        f"> **3️⃣ 브롤: 브롤 관련 메뉴를 보려면 {prefix}브롤을 입력하세요**\n"
+        f"> **4️⃣ 코인: 코인 관련 메뉴를 보려면 {prefix}코인을 입력하세요**\n"
+        f"> **5️⃣ 설정: 설정을 변경하려면 {prefix}설정을 입력하세요**\n"
     )
     await ctx.reply(message)
 
 # 본인 메시지 관리 기능, 밈 보내기 기능 있음 원하는 밈 디코로 보내주면 추가함
 @bot.command()
 async def 채팅(ctx):
-    prefix = config["prefix"]
     message = (
         "## 채팅 메뉴\n"
         f"> **1️⃣ 도배: 도배를 하려면 {prefix}도배 갯수 내용 을 입력하세요**\n"
         f"> **2️⃣ 청소: 청소를 하려면 {prefix}청소 갯수 를 입력하세요**\n"
+        f"> **3️⃣ 릭롤: {prefix}릭롤**\n"
+        f"> **4️⃣ 랜덤짤: 랜덤짤을 보내려면 {prefix}랜덤짤 을 입력하세요**\n"
+        f"> **5️⃣ 강화: 아이템을 강화하려면 {prefix}강화 강화할 아이템 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -98,20 +104,156 @@ async def 청소(ctx, count: int):
     deleted_count = len(deleted_messages) - 1
     await ctx.send(f"{deleted_count}개의 메시지를 삭제했습니다.", delete_after=5)
 
+@bot.command()
+async def 릭롤(ctx):
+    await ctx.send('https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713')
+
+# 랜덤짤 링크 리스트
+random_jjal_links = [
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224510",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224522",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224538",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224523",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224532",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224505",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224521",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224501",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224499",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224500",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-mc%EB%AC%B4%ED%98%84-%EB%AC%B4%ED%98%84-%EB%86%88%ED%98%84-gif-20749558",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224512",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224517",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224504",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224539",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224516",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819009",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224511",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224502",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819011",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224519",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224514",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-speech-gif-14501752",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224530",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819007",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-2275462757071994202",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224527",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224536",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224506",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819006",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224508",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224533",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819002",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224531",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819008",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224524",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224509",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819001",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224515",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819004",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224537",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819005",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819003",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224528",
+    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224518"
+]
+
+# 사용시 주의 필요
+@bot.command()
+async def 랜덤짤(ctx):
+        random_jjal = random.choice(random_jjal_links)
+        await ctx.reply(random_jjal)
+
+# 강화할 아이템과 초기 강화 수준 설정
+enhance_items = {}
+
+# 강화 기록 관리
+user_enhance_records = {}
+
+@bot.command()
+async def 강화(ctx, item_name: str):
+    user_id = ctx.author.id
+    
+    # 강화 기록 초기화
+    if user_id not in user_enhance_records:
+        user_enhance_records[user_id] = {}
+    
+    # 아이템 초기화
+    if item_name not in enhance_items:
+        enhance_items[item_name] = {"enhance_level": 0}
+    
+    # 강화 기록 초기화
+    if item_name not in user_enhance_records[user_id]:
+        user_enhance_records[user_id][item_name] = {"enhance_level": 0}
+
+    current_level = user_enhance_records[user_id][item_name]["enhance_level"]
+    
+    # 강화 시도
+    success_rate = get_success_rate(current_level)
+    fail_chance = get_fail_chance(current_level)
+
+    if random.random() < success_rate:
+        # 강화 성공
+        user_enhance_records[user_id][item_name]["enhance_level"] += 1
+        await ctx.send(f"{ctx.author.mention}, {item_name}을(를) 강화하여 {current_level + 1}강이 되었습니다!")
+    else:
+        # 강화 실패
+        if current_level > 0:
+            user_enhance_records[user_id][item_name]["enhance_level"] -= 1
+            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! {current_level}강으로 강화 레벨이 감소하였습니다.")
+        else:
+            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! 최하 강화 레벨입니다.")
+
+        # 10강 이상일 때 터질 확률 추가
+        if current_level >= 10 and random.random() < fail_chance:
+            user_enhance_records[user_id][item_name]["enhance_level"] = 0
+            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패로 인해 아이템이 터졌습니다. 강화 레벨이 초기화되었습니다.")
+
+def get_success_rate(level):
+    # 초기 성공 확률 설정
+    success_rates = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55]
+    if level < len(success_rates):
+        return success_rates[level]
+    else:
+        return success_rates[-1]  # 최대 레벨 이후는 마지막 확률 유지
+
+def get_fail_chance(level):
+    # 강화 실패 시 터질 확률 설정
+    fail_chances = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35]
+    if level >= 10:
+        if level - 10 < len(fail_chances):
+            return fail_chances[level - 10]
+        else:
+            return fail_chances[-1]  # 최대 확률 유지
+    else:
+        return 0.0
+
+@bot.command()
+async def 강화목록(ctx):
+    user_id = ctx.author.id
+    
+    if user_id not in user_enhance_records or not user_enhance_records[user_id]:
+        await ctx.send("강화한 아이템이 없습니다.")
+        return
+    
+    message = f"{ctx.author.mention}의 강화 목록:\n"
+    for item_name, record in user_enhance_records[user_id].items():
+        message += f"{item_name}: {record['enhance_level']}강\n"
+    
+    await ctx.send(message)
+
 # 각종 도구
 @bot.command()
 async def 도구(ctx):
-    prefix = config["prefix"]
     message = (
         "## 도구 메뉴\n"
         f"> **1️⃣ 관리: 서버 관리 기능을 이용하려면 {prefix}관리 를 입력하세요**\n"
         f"> **2️⃣ ip: 아이피 기능을 이용하려면 {prefix}ip ip주소 를 입력하세요**\n"
         f"> **3️⃣ 통조림자충: 냥코 통조림 충전을 하려면 {prefix}통조림자충 <이어하기코드> <인증번호> <통조림>을 입력하세요**\n"
-        f"> **4️⃣ 구글: 구글 검색을 하시려면 {prefix}구글 내용 을 입력하세요**\n"
-        f"> **5️⃣ 홍보: 홍보 기능을 이용하시려면 {prefix}홍보 를 입력하세요**\n" # config.json에 있는 promotion에 링크나 내용 작성
-        f"> **6️⃣ 웹훅: 웹훅 명령어를 보시려면 {prefix}웹훅명령어 를 입력하세요**\n"
-        f"> **7️⃣ 번역: 원하는 언어로 번역하려면 {prefix}번역 번역할 언어 번역할 문장 을 입력하세요**\n"
-        f"> **8️⃣ 뱃지 : 원하는 뱃지로 변경하시려면 {prefix}뱃지 [Bravery / Brilliance / Balance] 를 입력하세요**\n"
+        f"> **4️⃣ gpt: gpt를 사용하시려면 {prefix}gpt 내용 을 입력하세요**\n" # 삭제 예정
+        f"> **5️⃣ 구글: 구글 검색을 하시려면 {prefix}구글 내용 을 입력하세요**\n"
+        f"> **6️⃣ 홍보: 홍보 기능을 이용하시려면 {prefix}홍보 를 입력하세요**\n" # config.json에 있는 promotion에 링크나 내용 작성
+        f"> **7️⃣ 웹훅: 웹훅 명령어를 보시려면 {prefix}웹훅명령어 를 입력하세요**\n"
+        f"> **8️⃣ 번역: 원하는 언어로 번역하려면 {prefix}번역 번역할 언어 번역할 문장 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -279,7 +421,6 @@ async def 티켓(ctx, action: str, *, member: discord.Member):
                         "> !티켓 삭제 @멘션\n"
                         "> !티켓 열기 @멘션\n"
                         "> !티켓 닫기 @멘션")
-
 # ip 확인
 @bot.command()
 async def ip(ctx, address: str):
@@ -311,9 +452,9 @@ async def 통조림자충(ctx, 이어하기코드, 인증번호, 통조림):
         return
 
     try:
-        with open("config.json", "r") as config_file:
+        with open("./school.json", "r") as config_file:
             config = json.load(config_file)
-            webhook_url = config.get('webhook')  # config에서 웹훅 주소 받아오기
+            webhook_url = config.get('bchook')  # config에서 웹훅 주소 받아오기
             if not webhook_url:
                 await ctx.reply("config 파일에서 올바른 웹훅 주소를 설정해주세요.")
                 return
@@ -322,22 +463,22 @@ async def 통조림자충(ctx, 이어하기코드, 인증번호, 통조림):
             tc = 이어하기코드
             cc = 인증번호
             country = 'kr'
-            gv = config['version']
+            gv = '13.4.0'
             cf = int(통조림)
             
-            BCSFE_Python.downloadfile(tc, cc, country, gv)
+            downloadfile(tc, cc, country, gv)
             time.sleep(0.1)
-            BCSFE_Python.save_stats["cat_food"]["Value"] = cf
+            save_stats["cat_food"]["Value"] = cf
             time.sleep(0.1)
             processes = []
             placeholder = (
             "Main Dev : CintagramABP\n"
             "Dev : kimchaewon_cute\n"
             )
-            if os.path.exists("account.txt"):
-                os.remove("account.txt")
-            open("account.txt", "w+", encoding="utf-8").write(placeholder)
-            BCSFE_Python.uploadsave()
+            if os.path.exists("./account.txt"):
+                os.remove("./account.txt")
+            open("./account.txt", "w+", encoding="utf-8").write(placeholder)
+            uploadsave()
             await ctx.message.edit(content="**작업을 시작합니다.**\n**계정이 업로드 되었습니다.**")
             with open("account.txt", "r") as f:
                 output_text = f.read()
@@ -352,7 +493,7 @@ async def 통조림자충(ctx, 이어하기코드, 인증번호, 통조림):
         if webhook_url:
             webhook_obj = discord.Webhook.from_url(webhook_url, adapter=discord.RequestsWebhookAdapter())
             webhook_obj.send(f"작업중 오류가 발생하였습니다.{e}")
-
+            
 # 구글 검색 명령어 정의
 @bot.command(name='구글')
 async def google_search(ctx, *, query: str):
@@ -579,7 +720,6 @@ async def 테러(ctx, webhook_url: str, count: int, *, message: str):
 # 메인 기능임. 참고로 api 사용할 때 ip 바뀌면 사용 못하니까 ip 변경할때마다 api 키 새로 발급받아야 함
 @bot.command()
 async def 브롤(ctx):
-    prefix = config["prefix"]
     message = (
         "## 브롤스타즈 API : 내 계정을 확인하려면 명령어 앞에 내 를 입력하세요\n"
         f"> **1️⃣ 정보: 기본적인 정보를 보려면 {prefix}정보 #플레이어 태그 를 입력하세요**\n"
@@ -613,7 +753,7 @@ def get_player_detail_info(player_tag):
         return None
 
 # 한글 폰트 설정
-font_path = r"NanumGothic.ttf" # 아이폰 쓰면 앞에 한거처럼 ㄱㄱ
+font_path = "./NanumGothic.ttf" # 아이폰 쓰면 앞에 한거처럼 ㄱㄱ
 font_prop = fm.FontProperties(fname=font_path)
 plt.rcParams['font.family'] = font_prop.get_name()
 
@@ -1085,10 +1225,9 @@ def save_config(config):
     with open(CONFIG, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=4)
 
-# 코인 모의 투자 기능 봇 껐다 키면 잔고 초기화됨 초기 잔고는 1억 원(수정 가능)
+# 코인 모의 투자 기능 봇 껐다 키면 잔고 초기화됨 초기 잔고는 1억 달러(수정 가능)
 @bot.command()
 async def 코인(ctx):
-    prefix = config["prefix"]
     message = (
         "## 코인 모의 투자\n"
         f"> **1️⃣ 지갑: 잔고를 확인하려면 {prefix}지갑 을 입력하세요**\n"
@@ -1097,8 +1236,6 @@ async def 코인(ctx):
         f"> **4️⃣ 코인판매: 코인을 판매하려면 {prefix}판매 <코인 이름> <갯수> 를 입력하세요**\n"
         f"> **5️⃣ 잔고수정: 잔고를 수정하려면 {prefix}잔고수정 <돈> 을 입력하세요(수익률도 변경되니 조심)**\n"
         f"> **6️⃣ 가격수정: 코인의 가격을 수정하려면 {prefix}가격수정 <코인 이름> <갯수> 를 입력하세요**\n"
-        f"> **7️⃣ 업데이트: 코인을 강제로 업데이트하려면 {prefix}업데이트 를 입력하세요**\n"
-        f"> **8️⃣ 코인그래프: 코인의 그래프를 확인하려면 {prefix}코인그래프 <코인 이름> 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1106,79 +1243,48 @@ async def 코인(ctx):
 coin_prices = {
     "BTC": 50000,
     "ETH": 3000,
-    "TRX": 0.1,
     "XRP": 1,
-#    "LTC": 150,
+    "LTC": 150,
     "ADA": 2,
-#    "DOT": 30,
-#    "LINK": 25,
+    "DOT": 30,
+    "LINK": 25,
     "BCH": 600,
-#    "XLM": 0.5,
-#    "BSV": 300,
+    "XLM": 0.5,
+    "BSV": 300,
     "ETC": 50,
+    "USDT": 1,
     "SOL": 200,
     "DOGE": 0.3,
-#    "MATIC": 1,
-#    "ETH2": 2500
+    "MATIC": 1,
+    "ETH2": 2500
 }
-
-async def force_update_coin_prices():
-    coin_prices["BTC"] = pyupbit.get_current_price('USDT-BTC')
-    coin_prices["ETH"] = pyupbit.get_current_price('USDT-ETH')
-    coin_prices["TRX"] = pyupbit.get_current_price('USDT-TRX')
-    coin_prices["XRP"] = pyupbit.get_current_price('USDT-XRP')
-    coin_prices["ADA"] = pyupbit.get_current_price('USDT-ADA')
-    coin_prices["BCH"] = pyupbit.get_current_price('USDT-BCH')
-    coin_prices["ETC"] = pyupbit.get_current_price('USDT-ETC')
-    coin_prices["SOL"] = pyupbit.get_current_price('USDT-SOL')
-    coin_prices["DOGE"] = pyupbit.get_current_price('USDT-DOGE')
-    return
 
 # 코인 가격을 10초마다 변경하는 함수
 async def update_coin_prices():
-
     while True:
-        coin_prices["BTC"] = pyupbit.get_current_price('USDT-BTC')
-        coin_prices["ETH"] = pyupbit.get_current_price('USDT-ETH')
-        coin_prices["TRX"] = pyupbit.get_current_price('USDT-TRX')
-        coin_prices["XRP"] = pyupbit.get_current_price('USDT-XRP')
-#        coin_prices["LTC"] = pyupbit.get_current_price('KRW-LTC') # LTC는 upbit에서 상장이 안되서 임시제거
-        coin_prices["ADA"] = pyupbit.get_current_price('USDT-ADA')
-#        coin_prices["DOT"] = pyupbit.get_current_price('KRW-DOT') # DOT는 upbit에서 상장이 안되서 임시제거
-#        coin_prices["LINK"] = pyupbit.get_current_price('KRW-LINK') # LINK는 upbit에서 상장이 안되서 임시제거
-        coin_prices["BCH"] = pyupbit.get_current_price('USDT-BCH')
-#        coin_prices["XLM"] = pyupbit.get_current_price('KRW-XLM')
-#        coin_prices["BSV"] = pyupbit.get_current_price('KRW-BSV')
-        coin_prices["ETC"] = pyupbit.get_current_price('USDT-ETC')
-        coin_prices["SOL"] = pyupbit.get_current_price('USDT-SOL')
-        coin_prices["DOGE"] = pyupbit.get_current_price('USDT-DOGE')
-#        coin_prices["MATIC"] = pyupbit.get_current_price('KRW-MATIC')
-#        coin_prices["ETH2"] = pyupbit.get_current_price('KRW-ETH2')
-        await asyncio.sleep(30)
+        for coin in coin_prices:
+            # 무작위로 가격 변경 (-10% ~ +10%)
+            change = random.uniform(-0.1, 0.1)
+            coin_prices[coin] *= (1 + change)
+        # 소수점 한 자리까지만 표시
+            coin_prices[coin] = round(coin_prices[coin], 1)
+        await asyncio.sleep(10)
 
 bot.loop.create_task(update_coin_prices())
-
-async def save_wallet():
-    while True:
-        save_config(config)
-        await asyncio.sleep(60)
-    
-bot.loop.create_task(save_wallet())
 
 # 사용자의 지갑을 초기화하는 함수
 async def initialize_wallet(user_id):
     user_wallets[user_id] = {"balance": 100000000, "coins": {}}
-    save_config(config)
 
 # 사용자의 초기 잔고
 INITIAL_BALANCE = 100000000
 
 # 사용자의 지갑
-user_wallets = config.get("user_wallets")
+user_wallets = {}
 
 @bot.command()
 async def 지갑(ctx):
-    user_id = str(ctx.author.id)
+    user_id = ctx.author.id
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
     wallet = user_wallets[user_id]
@@ -1200,18 +1306,19 @@ async def 지갑(ctx):
     message += f"\n💼 **총 잔고**: ${total_balance:.2f}\n"
     message += f"💵 **투자한 금액**: ${total_investment:.2f}\n"
     message += f"📈 **총 수익률**: {profit_percentage:.2f}%"
+
     await ctx.reply(message)
 
 @bot.command()
 async def 코인목록(ctx):
-    message = "📈 | 📉 **코인 목록**:\n"
+    message = "코인 목록:\n"
     for coin, price in coin_prices.items():
-        message += f"`{coin}` : **${price}**\n"
+        message += f"{coin}: ${price}\n"
     await ctx.reply(message)
 
 @bot.command()
 async def 구매(ctx, coin: str, quantity: int):
-    user_id = str(ctx.author.id)
+    user_id = ctx.author.id
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
     wallet = user_wallets[user_id]
@@ -1228,12 +1335,11 @@ async def 구매(ctx, coin: str, quantity: int):
         wallet["coins"][coin] += quantity
     else:
         wallet["coins"][coin] = quantity
-    save_config(config)
     await ctx.reply(f"{ctx.author.mention}, {coin}을(를) {quantity}개 구매하였습니다.")
 
 @bot.command()
 async def 잔고수정(ctx, amount: int):
-    user_id = str(ctx.author.id)
+    user_id = ctx.author.id
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
     wallet = user_wallets[user_id]
@@ -1256,11 +1362,10 @@ async def 잔고수정(ctx, amount: int):
     # 이전 잔고에서 수정된 잔고의 차이를 수익에 반영하지 않음
     profit_percentage -= ((previous_balance - INITIAL_BALANCE) / INITIAL_BALANCE) * 100
     user_wallets[user_id]["profit_percentage"] = profit_percentage
-    save_config(config)
 
 @bot.command()
 async def 판매(ctx, coin: str, quantity: int):
-    user_id = str(ctx.author.id)
+    user_id = ctx.author.id
     if user_id not in user_wallets:
         await initialize_wallet(user_id)
     wallet = user_wallets[user_id]
@@ -1273,7 +1378,6 @@ async def 판매(ctx, coin: str, quantity: int):
     price = coin_prices[coin] * quantity
     wallet["balance"] += price
     wallet["coins"][coin] -= quantity
-    save_config(config)
     await ctx.reply(f"{ctx.author.mention}, {coin}을(를) {quantity}개 판매하였습니다. 총 {price}달러를 획득하였습니다.")
 
 @bot.command()
@@ -1284,502 +1388,257 @@ async def 가격수정(ctx, coin: str, price: float):
     coin_prices[coin] = price
     await ctx.reply(f"{coin}의 가격이 {price}달러로 수정되었습니다.")
 
+# 미완성. 게임 코드 잘못 짜서 다 뜯어고쳐야함
 @bot.command()
-async def 업데이트(ctx):
-    try:
-        await force_update_coin_prices()
-        await ctx.reply("코인 가격이 업데이트되었습니다.")
-    except Exception as e:
-        await ctx.reply("코인 가격 업데이트 중 오류가 발생했습니다.")
-
-
-
-
-@bot.command()
-async def 도박(ctx):
-    prefix = config["prefix"]
+async def 게임(ctx):
     message = (
-        "## 도박\n"
-        f"> **1️⃣ 확률도박: 확률도박을 하려면 {prefix}확률도박 [금액] 을 입력하세요**\n"
-        f"> **2️⃣ 바카라: 바카라를 하려면 {prefix}바카라 [플레이어 / 뱅커 / 타이] [금액] 을 입력하세요**\n"
+        "## Es의 짱짱RPG\n"
+        f"> **1️⃣ 던전: {prefix}던전을 입력해 던전에 입장하세요**\n"
+        f"> **2️⃣ 훈련: {prefix}훈련을 입력해 캐릭터를 강화하세요**\n"
+        f"> **3️⃣ 무기: {prefix}무기를 입력해 무기를 강화하세요**\n"
+        f"> **4️⃣ 상점: {prefix}상점을 입력해 무기를 구매하세요**\n"
+        f"> **5️⃣ 아이템: {prefix}아이템을 입력해 보유 아이템을 확인하세요**\n"
+        f"> **6️⃣ 관리자: {prefix}관리자를 입력해 관리자 기능을 사용하세요**\n"
+        f"> **7️⃣ 게임설정: {prefix}게임설정을 입력해 게임 설정을 변경하세요**\n"
     )
     await ctx.reply(message)
 
-@bot.command()
-async def 확률도박(ctx, amount: str):
-    user_id = str(ctx.author.id)
-    if user_id not in user_wallets:
-        await initialize_wallet(user_id)
-    wallet = user_wallets[user_id]
-    balance = wallet["balance"]
-    try:
-        amount = int(amount)
-    except:
-        await ctx.reply("금액은 정수로 입력해야 합니다.")
-        return
-    if amount > balance:
-        await ctx.reply("잔고가 부족합니다.")
-        return
-    elif amount <= 0:
-        await ctx.reply("금액은 0보다 커야 합니다.")
-        return
-    else:
-        wallet["balance"] -= amount
-        await ctx.reply(f"❓ **도박 진행중...**\n {amount}달러로 확률도박을 시작합니다.\n 확률 : 50%")
-        await asyncio.sleep(2)
-        if random.random() < 0.5:
-            wallet["balance"] += amount * 2
-            await ctx.reply(f"✅ **성공!** {ctx.author.mention}님이 도박에 성공하여 {amount * 2} 달러를 얻었습니다.")
+class Player:
+    def __init__(self, name, hp, attack, stamina, coins, experience):
+        self.name = name
+        self.hp = hp
+        self.attack = attack
+        self.stamina = stamina
+        self.coins = coins
+        self.experience = experience
+        self.equipped_weapon = None  # 장착된 무기
+
+    def attack_monster(self, monster):
+        if self.stamina > 0:
+            monster.hp -= self.attack
+            self.stamina -= 1
+            return f"{self.name}이(가) {monster.name}을(를) 공격했습니다. 남은 기력: {self.stamina}"
         else:
-            await ctx.reply(f"📛 **실패** {ctx.author.mention}님이 도박에 실패하여 {amount} 달러를 잃었습니다.")
-        save_config(config)
+            return "기력이 부족하여 공격할 수 없습니다."
 
-# 카드 덱 생성
-def create_deck():
-    suits = ['하트', '다이아몬드', '클로버', '스페이드']
-    values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-    deck = [(value, suit) for value in values for suit in suits]
-    random.shuffle(deck)
-    return deck
+class Monster:
+    def __init__(self, name, hp, attack, coin_drop_rate, gem_drop_rate):
+        self.name = name
+        self.hp = hp
+        self.attack = attack
+        self.coin_drop_rate = coin_drop_rate
+        self.gem_drop_rate = gem_drop_rate
 
-# 카드 점수 계산
-def card_value(card):
-    value = card[0]
-    if value in ['J', 'Q', 'K']:
-        return 0
-    elif value == 'A':
-        return 1
-    else:
-        return int(value)
+# Player 인스턴스 생성
+player = Player("플레이어", hp=100, attack=20, stamina=10, coins=0, experience=0)
 
-# 점수 계산
-def calculate_score(hand):
-    score = sum(card_value(card) for card in hand) % 10
-    return score
-
-@bot.command()
-async def 바카라(ctx, bet: str, amount: str):
-    if bet not in ['플레이어', '뱅커', '타이']:
-        await ctx.reply("베팅은 '플레이어', '뱅커', 또는 '타이' 중 하나로 해야 합니다.")
-        return
-    try:
-        amount = int(amount)
-    except:
-        await ctx.reply("금액은 정수로 입력해야 합니다.")
-        return
-
-    user_id = str(ctx.author.id)
-    if user_id not in user_wallets:
-        await initialize_wallet(user_id)
-    wallet = user_wallets[user_id]
-    balance = wallet["balance"]
-    if amount > balance:
-        await ctx.reply("잔고가 부족합니다.")
-        return
-    elif amount <= 0:
-        await ctx.reply("금액은 0보다 커야 합니다.")
-        return
-    
-    wallet["balance"] -= amount
-    
-    deck = create_deck()
-    
-    # 플레이어와 뱅커에게 두 장의 카드를 분배
-    player_hand = [deck.pop(), deck.pop()]
-    banker_hand = [deck.pop(), deck.pop()]
-
-    player_score = calculate_score(player_hand)
-    banker_score = calculate_score(banker_hand)
-
-    player_result = (
-        f"😀 **플레이어의 카드** : {player_hand[0][0]} {player_hand[0][1]}, {player_hand[1][0]} {player_hand[1][1]} __**(점수: {player_score})**__\n"
-    )
-    banker_result = (
-        f"💵 **뱅커의 카드** : {banker_hand[0][0]} {banker_hand[0][1]}, {banker_hand[1][0]} {banker_hand[1][1]} __**(점수: {banker_score})**__\n"
-    )
-
-    # 승자 판정
-    if player_score > banker_score:
-        winner = '플레이어'
-    elif player_score < banker_score:
-        winner = '뱅커'
-    else:
-        winner = '타이'
-
-    result_message = f"**결과: {winner} 승리!**\n\n"
-
-    # 베팅 결과
-    if bet == '타이' and winner == '타이':
-        result_message += f"✅ **축하합니다! {winner}에 베팅하여 이겼습니다!**\n 🎉 **{amount*9} 달러를 얻었습니다!!! (9배)**"
-        wallet["balance"] += amount * 9
-    elif bet == winner:
-        result_message += f"✅ **축하합니다! {winner}에 베팅하여 이겼습니다!**\n 🎉 **{amount*2} 달러를 얻었습니다!**"
-        wallet["balance"] += amount * 2
-    else:
-        result_message += f"📛 **아쉽게도 {bet}에 베팅했지만 졌습니다...**\n 😭 **{amount} 달러를 잃었습니다...**"
-
-    player = await ctx.reply("플레이어의 카드를 뽑는 중입니다....")
-    await asyncio.sleep(1.5)
-    await player.edit(content=player_result) 
-    banker = await ctx.reply("뱅커의 카드를 뽑는 중입니다....")
-    await asyncio.sleep(1.5)
-    await banker.edit(content=banker_result)
-    await ctx.reply(result_message)
-    save_config(config)
-
-@bot.command()
-async def 기타(ctx):
-    prefix = config["prefix"]
-    message = (
-        "## 기타\n"
-        f"> **1️⃣ 릭롤: {prefix}릭롤**\n"
-        f"> **2️⃣ 랜덤짤: 랜덤짤을 보내려면 {prefix}랜덤짤 을 입력하세요**\n"
-        f"> **3️⃣ 강화: 아이템을 강화하려면 {prefix}강화 강화할 아이템 을 입력하세요**\n"
-        f"> **4️⃣ 폭파: 폭탄을 투하하려면 {prefix}bomb 을 입력하세요**\n"
-    )
-    await ctx.reply(message)
-
-@bot.command()
-async def 릭롤(ctx):
-    await ctx.send('https://tenor.com/view/rickroll-roll-rick-never-gonna-give-you-up-never-gonna-gif-22954713')
-
-# 랜덤짤 링크 리스트
-random_jjal_links = [
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224510",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224522",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224538",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224523",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224532",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224505",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224521",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224501",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224499",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224500",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-mc%EB%AC%B4%ED%98%84-%EB%AC%B4%ED%98%84-%EB%86%88%ED%98%84-gif-20749558",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224512",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224517",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224504",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224539",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224516",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819009",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224511",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224502",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819011",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224519",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224514",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-speech-gif-14501752",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224530",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819007",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-2275462757071994202",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224527",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224536",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224506",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819006",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224508",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224533",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819002",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224531",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819008",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224524",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224509",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819001",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224515",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819004",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224537",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819005",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-21819003",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224528",
-    "https://tenor.com/view/%EB%85%B8%EB%AC%B4%ED%98%84-gif-22224518"
+# Monster 인스턴스 생성
+monsters = [
+    Monster("슬라임", hp=50, attack=10, coin_drop_rate=0.8, gem_drop_rate=0.5),
+    Monster("고블린", hp=80, attack=15, coin_drop_rate=0.7, gem_drop_rate=0.4),
+    Monster("오크", hp=120, attack=25, coin_drop_rate=0.6, gem_drop_rate=0.3),
+    Monster("드래곤", hp=200, attack=30, coin_drop_rate=0.5, gem_drop_rate=0.2),
+    Monster("스켈레톤", hp=70, attack=18, coin_drop_rate=0.9, gem_drop_rate=0.6),
+    Monster("마왕", hp=500, attack=40, coin_drop_rate=1, gem_drop_rate=1),
+    Monster("플레임 몬스터", hp=90, attack=22, coin_drop_rate=0.8, gem_drop_rate=0.4),
+    Monster("늑대인간", hp=110, attack=24, coin_drop_rate=0.7, gem_drop_rate=0.3),
+    Monster("거대 거미", hp=150, attack=28, coin_drop_rate=0.6, gem_drop_rate=0.2),
 ]
 
-# 사용시 주의 필요
 @bot.command()
-async def 랜덤짤(ctx):
-        random_jjal = random.choice(random_jjal_links)
-        await ctx.reply(random_jjal)
-
-# 강화할 아이템과 초기 강화 수준 설정
-enhance_items = {}
-
-# 강화 기록 관리
-user_enhance_records = {}
-
-@bot.command()
-async def 강화(ctx, item_name: str):
-    user_id = ctx.author.id
-    
-    # 강화 기록 초기화
-    if user_id not in user_enhance_records:
-        user_enhance_records[user_id] = {}
-    
-    # 아이템 초기화
-    if item_name not in enhance_items:
-        enhance_items[item_name] = {"enhance_level": 0}
-    
-    # 강화 기록 초기화
-    if item_name not in user_enhance_records[user_id]:
-        user_enhance_records[user_id][item_name] = {"enhance_level": 0}
-
-    current_level = user_enhance_records[user_id][item_name]["enhance_level"]
-    
-    # 강화 시도
-    success_rate = get_success_rate(current_level)
-    fail_chance = get_fail_chance(current_level)
-
-    if random.random() < success_rate:
-        # 강화 성공
-        user_enhance_records[user_id][item_name]["enhance_level"] += 1
-        await ctx.send(f"{ctx.author.mention}, {item_name}을(를) 강화하여 {current_level + 1}강이 되었습니다!")
-    else:
-        # 강화 실패
-        if current_level > 0:
-            user_enhance_records[user_id][item_name]["enhance_level"] -= 1
-            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! {current_level - 1}강으로 강화 레벨이 감소하였습니다.")
-        else:
-            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! 최하 강화 레벨입니다.")
-
-        # 10강 이상일 때 터질 확률 추가
-        if current_level >= 10 and random.random() < fail_chance:
-            user_enhance_records[user_id][item_name]["enhance_level"] = 0
-            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패로 인해 아이템이 터졌습니다. 강화 레벨이 초기화되었습니다.")
-
-def get_success_rate(level):
-    # 초기 성공 확률 설정
-    success_rates = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55]
-    if level < len(success_rates):
-        return success_rates[level]
-    else:
-        await ctx.reply('> **`알수없는 오류`**')
-
-@bot.command()  # Measure Dick size command
-async def dick(ctx, user: discord.Member = None):
-    size = int(random.randint(0, 30))
-    if user.id == 1238461591557771355 or 899657816833409044:
-        size = 523
-    amount = '='*size
-    await ctx.send(f'*__{user.mention}__\'s dick 크키 :* ***`8{amount}D`***')
-    await ctx.send(f'{size}cm')
-
-# @bot.command()
-# async def sex(ctx, user:discord.Member = None):
-#     sex_amount = int(random.randint(0, 10))
-#     if sex_amount == 0:
-#         await ctx.send("한번도 섹스를 안해보셨군요!")
-#     else:
-#         await ctx.send(f"{sex_amount}번 섹스를 해보셨군요!")
-
-@bot.command()
-async def 기타(ctx):
-    prefix = config['prefix']
+async def 던전(ctx):
     message = (
-        "## 기타\n"
-        f"> ** 1️⃣ dick : 상대방의 dick 크기를 측정하려면 {prefix}dick [멘션] 을 입력하세요.**\n"
-        f"> ** 2️⃣ 폭탄 : 폭탄 에니메이션을 시청하려면 {prefix}폭탄 을 입력하세요.**\n"
-        f"> ** 3️⃣ 도메인IP : 도메인의 IP를 확인하려면 {prefix}도메인IP [도메인] 을 입력하세요.**\n"
-        
+        "## 던전\n"
+        f"> **1️⃣ 몬스터목록: 몬스터를 확인하려면 {prefix}몬스터 를 입력하세요\n"
+        f"> **2️⃣ 공격: 몬스터를 공격하려면 {prefix}공격 몬스터 번호 를 입력하세요**\n"
     )
     await ctx.reply(message)
 
-# def get_pfp(token, id):
+@bot.command()
+async def 몬스터(ctx):
+    monster_list_msg = "**몬스터 리스트**\n"
+    for idx, monster in enumerate(monsters, start=1):
+        monster_list_msg += f"{idx}. {monster.name} (체력: {monster.hp}, 공격력: {monster.attack})\n"
+    await ctx.send(monster_list_msg)
 
-#     headers = {'Authorization': token}
-#     r = requests.get(f'https://discord.com/api/v9/users/{id}', headers=headers).text
-#     user = json.loads(r)
-#     avatar = user['avatar']
-#     id = user['id']
+async def game_over(ctx):
+    await ctx.send("플레이어가 몬스터에게 지면 게임 오버입니다.")
+    # 플레이어를 부활 지점으로 이동시킵니다. 예를 들어, 도시 중심으로 이동할 수 있습니다.
 
-#     filename = f'avatars/{user["username"]}{user["discriminator"]}'
+@bot.command()
+async def 공격(ctx, monster_index: int):
+    if 1 <= monster_index <= len(monsters):
+        monster = monsters[monster_index - 1]
+        attack_result = player.attack_monster(monster)
+        await ctx.send(attack_result)
 
-#     r = requests.get(f'https://cdn.discordapp.com/avatars/{id}/{avatar}.webp')
-#     open(f'{filename}.webp', 'wb').write(r.content)
+        if monster.hp <= 0:
+            await ctx.send(f"{monster.name}을(를) 처치했습니다!")
+            player.coins += 10  # 임시적으로 코인을 10 추가합니다.
+            player.experience += 20  # 임시적으로 경험치를 20 추가합니다.
 
-#     image = Image.open(f'{filename}.webp')
-#     image.save(f'{filename}.png', format="png")
-#     pfp = f'{filename}.png'
+            # 코인과 경험치 획득 메시지를 출력합니다.
+            coin_exp_msg = f"획득한 코인: 10, 획득한 경험치: 20"
+            await ctx.send(coin_exp_msg)
 
-#     return pfp
+            # 젬 드랍 여부를 결정합니다.
+            if random.random() < monster.gem_drop_rate:
+                await ctx.send(f"{monster.name}이(가) 젬을 드랍했습니다!")
+    else:
+        await ctx.send("올바른 몬스터 번호를 입력하세요.")
 
-@bot.command()  # info about server
-async def 서버정보(ctx):  # members, roles, icon, emojis, threads, stickers, text_channels, forums
-    message = ctx.message
-    guild = message.guild
+        # 플레이어의 체력이 0 이하인 경우 게임 오버 처리
+        if player.hp <= 0:
+            await game_over(ctx)
 
-    information = f'''```ansi
-[1;37m 서버정보: 
-    [0;34m이름:[0;36m {guild.name}
-    [0;31m생성일:[0;36m {guild.created_at}
-    [0;31m컨텐츠 필터:[0;36m {guild.explicit_content_filter}
-    [0;34m설명:[0;36m {guild.description}
-    [0;31m이모지 리밋:[0;36m {guild.emoji_limit}
-    [0;31m파일 사이즈 리밋:[0;36m {guild.filesize_limit}
-    [0;31m최대멤버:[0;36m {guild.max_members}
-    [0;31m최대 음성 채널 유저:[0;36m {guild.max_video_channel_users}
-    [0;34m서버 아이디:[0;36m {guild.id}
-    [0;34m인원수:[0;36m {guild.member_count}
-    [0;34m오너:[0;36m {guild.owner}
-    [0;34m오너 아이디:[0;36m {guild.owner_id}
-    [0;34m룰 채널:[0;36m {guild.rules_channel}
-    [0;31mMFA 레벨:[0;36m {guild.mfa_level}
-    [0;31m인증레벨 :[0;36m {guild.verification_level}
+class Player:
+    def __init__(self, name, hp, attack, stamina, coins, experience):
+        self.name = name
+        self.hp = hp
+        self.attack = attack
+        self.stamina = stamina
+        self.coins = coins
+        self.experience = experience
 
-    [0;34mBoosts: [0;36m{guild.premium_subscription_count}
-```'''
-    await ctx.send(information)
+    def train(self):
+        # 훈련으로 인한 스텟 상승 및 경험치 획득
+        stat_increase_rate = 0.05  # 스텟 상승 비율 (5%)
+        experience_gain = 50  # 경험치 획득량
 
-# @bot.command()  # Steal PFP command
-# async def stealpfp(ctx, user: discord.Member = None):
-#     user_pfp = get_pfp(TOKEN, user.id)
-#     print(user_pfp)
-#     fp = open(user_pfp, 'rb')
-#     pfp = fp.read()
+        self.hp += int(self.hp * stat_increase_rate)
+        self.attack += int(self.attack * stat_increase_rate)
+        self.stamina += int(self.stamina * stat_increase_rate)
+        self.experience += experience_gain
 
-#     try:
-#         await ctx.author.edit(password="Ord09fpshqj!", avatar=pfp)
-#         await ctx.send(f'프로필 사진을 {user}님의 프로필 사진으로 변경하였습니다.')
-#     except discord.HTTPException as e:
-#         await ctx.send(f'HTTPException. {e}')
-#     except Exception as e:
-#         await ctx.send(f'프로필 사진 변경에 실패하였습니다. {e}')
-#         print(e)
+@bot.command()
+async def 훈련(ctx):
+    train_result = player.train()
+    await ctx.send(train_result)
+
+# 작동x
+@bot.command()
+async def 무기(ctx):
+    message = (
+        "**무기 메뉴**\n"
+        "1. 도감\n"
+        "2. 무기 제작\n"
+        "3. 적 무기 도감\n"
+        "4. 무기 강화\n"
+        "5. 부착물 탈부착\n"
+        "원하는 기능의 번호를 입력하세요."
+    )
+    await ctx.send(message)
+
+weapons = {
+    "과일칼": {"atk": 20, "lock": False},
+    "사시미칼": {"atk": 30, "lock": False},
+    "카타나": {"atk": 40, "lock": True},
+    "도끼": {"atk": 35, "lock": True},
+    "망치": {"atk": 25, "lock": False},
+    "창": {"atk": 28, "lock": True},
+    "글록": {"atk": 15, "lock": False},
+    "활": {"atk": 25, "lock": True},
+    "석궁": {"atk": 33, "lock": True},
+    "마법봉": {"atk": 35, "lock": True},
+    "수리검": {"atk": 28, "lock": False},
+    "얼음의 지팡이": {"atk": 15, "lock": True},
+    "황금 단검": {"atk": 18, "lock": True},
+    "돌격소총": {"atk": 40, "lock": True},
+    "전투도끼": {"atk": 45, "lock": True},
+    "샷건": {"atk": 60, "lock": True},
+    "바렛": {"atk": 100, "lock": True},
+    "RPG": {"atk": 120, "lock": True},
+    "화염의 지팡이": {"atk": 30, "lock": True},
+    "빛의 마법서": {"atk": 30, "lock": True},
+    "어둠의 마법서": {"atk": 30, "lock": True},
+    "Ak-47": {"atk": 40, "lock": True},
+    "수류탄": {"atk": 50, "lock": True},
+    "C4": {"atk": 80, "lock": True},
+    "핵미사일": {"atk": 10000, "lock": True},
+    "죽도": {"atk": 10, "lock": False},
+    "비비빠따": {"atk": 42, "lock": True},
+    "권투글러브": {"atk": 25, "lock": False},
+    "단소": {"atk": 15, "lock": False},
+}
+class Player:
+    def __init__(self, name, hp, attack, stamina, coins, experience):
+        self.name = name
+        self.hp = hp
+        self.attack = attack
+        self.stamina = stamina
+        self.coins = coins
+        self.experience = experience
+        self.equipped_weapon = None  # 장착된 무기
 
 
+    def equip_weapon(self, weapon_name):
+        if weapon_name in weapons:
+            self.equipped_weapon = weapon_name
+            return f"{self.name}은(는) {weapon_name}을(를) 장착했습니다."
+        else:
+            return f"{weapon_name}은(는) 무기 도감에 등록되어 있지 않습니다."
 
-@bot.command()  # Domain2IP command
-async def 도메인IP(ctx, arg):
-    ip = socket.gethostbyname(arg)
-    await ctx.send(f'`IP: {ip}`')
+    def unequip_weapon(self):
+        if self.equipped_weapon is not None:
+            unequipped_weapon = self.equipped_weapon
+            self.equipped_weapon = None
+            return f"{self.name}은(는) {unequipped_weapon}을(를) 해제했습니다."
+        else:
+            return "장착된 무기가 없습니다."
 
-@bot.command()  # Jeriko bomb command
-async def 폭탄(ctx):
-    message = await ctx.send(f'''
-```ansi
-[30m
-        |\**/|      
-        | == |
-         |  |
-         |  |
-         \  /
-          \/
-.
-.
-.
-```
-''')
-    time.sleep(0.4)
-    await message.edit(content='''
-```ansi
-[30m
-        |\**/|      
-        | == |
-         |  |
-         |  |
-         \  /
-          \/
-.
-.
-```
-''')
+@bot.command()
+async def 도감(ctx, weapon_name: str = None):
+    if weapon_name is None:
+        # 모든 무기를 보여줌
+        message = "**무기 도감**\n"
+        for weapon, stats in weapons.items():
+            message += f"{weapon} - 공격력: {stats['atk']}, {'잠금' if stats['lock'] else '해제'}\n"
+    else:
+        # 특정 무기의 스텟을 보여줌
+        if weapon_name in weapons:
+            stats = weapons[weapon_name]
+            message = f"**{weapon_name}**의 스텟:\n공격력: {stats['atk']}\n{'잠금' if stats['lock'] else '해제'}"
+        else:
+            message = f"{weapon_name}은(는) 무기 도감에 등록되어 있지 않습니다."
 
-    time.sleep(0.4)
-    await message.edit(content='''
-    ```ansi
-    [30m
-        |\**/|      
-        | == |
-         |  |
-         |  |
-         \  /
-          \/
-.
-    ```
-    ''')
+    await ctx.send(message)
 
-    time.sleep(0.4)
-    await message.edit(content='''
-    ```ansi
-    [30m
-        |\**/|      
-        | == |
-         |  |
-         |  |
-         \  /
-          \/
-    ```
-    ''')
+@bot.command()
+async def 장착(ctx, weapon_name: str):
+    if player.equipped_weapon is None:
+        message = player.equip_weapon(weapon_name)
+    else:
+        message = "이미 무기를 장착하고 있습니다. 먼저 현재 장착된 무기를 해제하세요."
 
-    time.sleep(0.4)
-    await message.edit(content='''
-    ```ansi
-    [31m
-          _ ._  _ , _ ._
-        (_ ' ( `  )_  .__)
-      ( (  (    )   `)  ) _)
-     (__ (_   (_ . _) _) ,__)
-         `~~`\ ' . /`~~`
-              ;   ;
-              /   \|
-_____________/_ __ \_____________
-    ```
-    ''')
+    await ctx.send(message)
 
-    time.sleep(0.4)
-    await message.edit(content='''
-        ```ansi
-        [33m
-                             ____
-                     __,-~~/~    `---.
-                   _/_,---(      ,    )
-               __ /        <    /   )  \___
-- ------===;;;'====------------------===;;;===----- -  -
-                  \/  ~"~"~"~"~"~\~"~)~"/
-                  (_ (   \  (     >    \)
-                   \_( _ <         >_>'
-                      ~ `-i' ::>|--"
-                          I;|.|.|
-                         <|i::|i|`.
-                        (` ^'"`-' ")
-        ```
-        ''')
+@bot.command()
+async def 장착해제(ctx):
+    message = player.unequip_weapon()
+    await ctx.send(message)
 
-    time.sleep(0.4)
-    await message.edit(content='''
-            ```ansi
-            [33m
-                               ________________
-                          ____/ (  (    )   )  \___
-                         /( (  (  )   _    ))  )   )\_
-                       ((     (   )(    )  )   (   )  )
-                     ((/  ( _(   )   (   _) ) (  () )  )
-                    ( (  ( (_)   ((    (   )  .((_ ) .  )_
-                   ( (  )    (      (  )    )   ) . ) (   )
-                  (  (   (  (   ) (  _  ( _) ).  ) . ) ) ( )
-                  ( (  (   ) (  )   (  ))     ) _)(   )  )  )
-                 ( (  ( \ ) (    (_  ( ) ( )  )   ) )  )) ( )
-                  (  (   (  (   (_ ( ) ( _    )  ) (  )  )   )
-                 ( (  ( (  (  )     (_  )  ) )  _)   ) _( ( )
-                  ((  (   )(    (     _    )   _) _(_ (  (_ )
-                   (_((__(_(__(( ( ( |  ) ) ) )_))__))_)___)
-                   ((__)        \.\||lll|l||///          \_))
-                            (   /(/ (  )  ) )\   )
-                          (    ( ( ( | | ) ) )\   )
-                           (   /(| / ( )) ) ) )) )
-                         (     ( ((((_(|)_)))))     )
-                          (      ||\(|(|)|/||     )
-                        (        |(||(||)||||        )
-                          (     //|/l|||)|\.\ \     )
-                        (/ / //  /|//||||\.\  \ \  \ _)
-            ```
-            ''')
+@bot.command()
+async def 보상(ctx):
+    await ctx.send('보상을 받습니다.')
+
+@bot.command()
+async def 아이템(ctx):
+    await ctx.send('아이템 목록을 확인합니다.')
+
+@bot.command()
+async def 관리자(ctx):
+    await ctx.send('관리자 메뉴에 접속했습니다.')
+
+@bot.command()
+async def 게임설정(ctx):
+    await ctx.send('게임 설정을 변경합니다.')
 
 @bot.command()
 async def 설정(ctx):
-    prefix = config["prefix"]
     message = (
         "## 설정\n"
         f"> **1️⃣ 접두사 변경: 접두사를 변경하려면 {prefix}접두사 새접두사 을 입력하세요**\n"
         f"> **2️⃣ 내 별명 변경: 본인의 별명을 변경하려면 {prefix}내별명 변경할별명 을 입력하세요**\n"
-        f"> **3️⃣ 활동상태: 활동상태를 변경하려면 {prefix}활동상태 뜨게 할거 를 입력하세요**\n"
-        f"> **4️⃣ 뱃지: 뱃지를 변경하려면 {prefix}뱃지 원하는 뱃지 를 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1795,52 +1654,6 @@ async def 접두사(ctx, new_prefix: str):
 async def 내별명(ctx, new_nickname: str):
     await ctx.author.edit(nick=new_nickname)
     await ctx.reply(f"본인의 별명을 '{new_nickname}'으로 변경했습니다.")
-    
-@bot.command()
-async def 활동상태(ctx, *, activity_name: str):
-    try:
-        config['activity'] = activity_name
-        save_config(config)
-        activity = discord.Game(name=activity_name)
-        await bot.change_presence(activity=activity)
-        await ctx.reply(f'활동상태를 {activity_name}으로 변경하였습니다.')
-    except Exception as e:
-        print(e)
-
-@bot.command()  # Hypesquad 뱃지 변경, 레이트 리밋 가끔 걸림 ㅇㅅㅇ
-async def 뱃지(ctx, arg:str):
-    if arg == 'Bravery':
-        hypesquad = '1'
-    elif arg == 'Brilliance':
-        hypesquad = '2'
-    elif arg == 'Balance':
-        hypesquad = '3'
-    else:
-        await ctx.send('> **`올바른 뱃지 이름을 입력해주세요!`**')
-        return
-
-    headers = {
-        'authorization': TOKEN
-    }
-
-    body = {
-        'house_id': hypesquad
-    }
-
-    meResponse = requests.get('https://canary.discordapp.com/api/v6/users/@me', headers=headers)
-
-    response = requests.post('https://discord.com/api/v9/hypesquad/online', headers=headers, json=body)
-
-    if response.status_code == 204:
-        await ctx.reply(f'> **성공적으로 뱃지를 {arg}로 변경하였습니다!**')
-
-    elif response.status_code == 401:
-        await ctx.reply('> **`401 error`**')
-
-    elif response.status_code == 429:
-        await ctx.reply('> **`레이트 리밋, 잠시후 다시 시도해주세요 (429)`**')
-    else:
-        await ctx.reply('> **`알수없는 오류`**')
 
 if __name__ == '__main__':
     bot.run(TOKEN, bot=False)
