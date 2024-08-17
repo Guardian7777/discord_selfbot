@@ -21,7 +21,7 @@ import math
 import base64
 import socket
 
-CONFIG = r"personnel_config.json" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
+CONFIG = r"personal_config.json" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
 
 def load_config():
     with open(CONFIG, 'r', encoding='utf-8') as f:
