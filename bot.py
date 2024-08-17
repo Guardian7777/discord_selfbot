@@ -1717,6 +1717,8 @@ async def 기타(ctx):
         f"> **6️⃣ 도메인IP : 도메인의 IP를 확인하려면 {prefix}도메인IP [도메인] 을 입력하세요**\n"
         f"> **7️⃣ 서버정보: 서버정보를 확인하려면 {prefix}서버정보 를 입력하세요**\n"
         f"> **8️⃣ IP조회: IP를 조회하려면 {prefix}IP조회 [아이피 or 도메인] 을 입력하세요**\n"
+        f"> **9️⃣ 유저정보: 유저정보를 조회하려면 {prefix}유저정보 [유저멘션] 을 입력하세요**\n"
+        f"> **1️⃣0️⃣ 프사: 유저의 프사를 확인하려면 {prefix}프사 [유저멘션] 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -2121,6 +2123,30 @@ async def IP조회(ctx, *, ipaddr: str = '1.1.1.1'):
         await ctx.send(embed)
     except Exception as e:
         await ctx.send(f"[에러]: {e}")
+
+@bot.command()
+async def 유저정보(ctx, member: discord.Member):
+    roles = [role.name for role in member.roles if role.name != "@everyone"]
+    role_str = ", ".join(roles) if roles else "없음"
+    account_type = "봇" if member.bot else "사람"
+    permissions = "관리자" if member.guild_permissions.administrator else "멤버"
+
+    user_info = (
+        f"**이름:** {member.name}\n"
+        f"**ID:** {member.id}\n"
+        f"**계정 생성일:** {member.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        f"**서버 입장일:** {member.joined_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        f"**계정 유형:** {account_type}\n"
+        f"**서버 권한:** {permissions}\n"
+        f"**서버 역할:** {role_str}"
+    )
+
+    await ctx.send(user_info)
+
+@bot.command()
+async def 프사(ctx, member: discord.Member):
+    avatar_url = member.avatar_url
+    await ctx.send(f"{avatar_url}")
 
 # @bot.command()
 # async def sex(ctx, user:discord.Member = None):
