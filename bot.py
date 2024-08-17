@@ -1379,25 +1379,31 @@ async def 블랙잭(ctx, amount: int):
                 await ctx.send(f'> 😭 **버스트! 당신이 졌습니다..** 당신의 최종 패: {player_hand_str} (총 점수: {blackjack_hand_value(player_hand)})')
                 await ctx.send(f'💸 {amount} 달러를 잃었습니다...')
                 return
-        if msg.content.lower() == '스탠드': 
+        elif msg.content.lower() == '스탠드': 
             break
 
+    # 딜러의 카드 공개 및 자동 플레이
     dealer_hand_str = ', '.join(f'{rank} {suit}' for rank, suit in dealer_hand)
     while blackjack_hand_value(dealer_hand) < 17:
-        dealer_hand.append(deck.pop())
-    dealer_hand_value = blackjack_hand_value(dealer_hand)
-    await ctx.send(f'> 딜러의 손: {dealer_hand_str} (총 점수: {dealer_hand_value})')
+        new_card = deck.pop()
+        dealer_hand.append(new_card)
+        dealer_hand_str = ', '.join(f'{rank} {suit}' for rank, suit in dealer_hand)
+        await ctx.send(f'> 딜러가 카드를 뽑았습니다: {new_card[0]} {new_card[1]} (총 점수: {blackjack_hand_value(dealer_hand)})')
 
+    dealer_hand_value = blackjack_hand_value(dealer_hand)
+    await ctx.send(f'> 딜러의 최종 손: {dealer_hand_str} (총 점수: {dealer_hand_value})')
+
+    # 결과 결정
     player_value = blackjack_hand_value(player_hand)
     if dealer_hand_value > 21 or player_value > dealer_hand_value:
-        result = '> 🎉 **승리하셨습니다!**'
+        result = '🎉 **승리하셨습니다!**'
         money_result = f"💰 {amount * 2} 달러를 얻었습니다!"
         wallet['balance'] += amount * 2
     elif player_value < dealer_hand_value:
-        result = '> 📛 **딜러가 승리했습니다!**'
+        result = '📛 **딜러가 승리했습니다!**'
         money_result = f"💸 {amount} 달러를 잃었습니다..."
     else:
-        result = '> 🔰 **무승부입니다!**'
+        result = '🔰 **무승부입니다!**'
         money_result = f"💰 {amount} 달러를 돌려받았습니다."
         wallet['balance'] += amount
 
