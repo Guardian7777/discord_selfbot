@@ -1415,6 +1415,9 @@ async def 바카라(ctx, bet: str, amount: str):
     if bet == '타이' and winner == '타이':
         result_message += f"✅ **축하합니다! {winner}에 베팅하여 이겼습니다!**\n 🎉 **{amount*9} 달러를 얻었습니다!!! (9배)**"
         wallet["balance"] += amount * 9
+    elif bet != '타이' and winner == '타이':
+        result_message += f"✅ **{bet}에 베팅했지만 결과가 타이라 돈을 반환받습니다.**"
+        wallet["balance"] += amount
     elif bet == winner:
         result_message += f"✅ **축하합니다! {winner}에 베팅하여 이겼습니다!**\n 🎉 **{amount*2} 달러를 얻었습니다!**"
         wallet["balance"] += amount * 2
