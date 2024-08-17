@@ -1309,6 +1309,7 @@ async def 도박(ctx):
         f"> **1️⃣ 확률도박: 확률도박을 하려면 {prefix}확률도박 [금액] 을 입력하세요**\n"
         f"> **2️⃣ 바카라: 바카라를 하려면 {prefix}바카라 [플레이어 / 뱅커 / 타이] [금액] 을 입력하세요**\n"
         f"> **3️⃣ 블랙잭: 블랙잭을 하려면 {prefix}블랙잭 [금액] 을 입력하세요**\n"
+        f"> **4️⃣ 슬롯머신: 슬롯머신을 돌리려면 {prefix}슬롯머신 [금액] 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1534,6 +1535,49 @@ async def 바카라(ctx, bet: str, amount: str):
     await asyncio.sleep(1.5)
     await banker.edit(content=banker_result)
     await ctx.reply(result_message)
+    save_config(config)
+
+@bot.command()
+async def 슬롯머신(ctx, amount: int):
+    user_id = str(ctx.author.id)
+    if user_id not in user_wallets:
+        await initialize_wallet(user_id)
+    wallet = user_wallets[user_id]
+    balance = wallet["balance"]
+
+    if amount > balance:
+        await ctx.reply("잔고가 부족합니다.")
+        return
+    elif amount <= 0:
+        await ctx.reply("금액은 0보다 커야 합니다.")
+        return
+
+    wallet["balance"] -= amount
+
+    # 슬롯머신 심볼
+    symbols = ["🍒", "🍋", "🍉", "🍇", "🍓", "⭐", "🔔"]
+    result = [random.choice(symbols) for _ in range(3)]
+    hidden_result = ["⬜", "⬜", "⬜"]
+
+    message = await ctx.reply(f"🎰 슬롯머신 결과: {' '.join(hidden_result)}")
+
+    for i in range(3):
+        hidden_result[i] = result[i]
+        await message.edit(content=f"🎰 슬롯머신 결과: {' '.join(hidden_result)}")
+        await asyncio.sleep(1)
+
+    # 결과 계산
+    if result[0] == result[1] == result[2]:
+        winnings = amount * 7
+        await ctx.reply(f"잭팟! {winnings}원을 획득했습니다!")
+    elif result[0] == result[1] or result[1] == result[2] or result[0] == result[2]:
+        winnings = amount * 3
+        await ctx.reply(f"축하합니다! 2개가 일치했습니다! {winnings}원을 획득했습니다!")
+    else:
+        winnings = 0
+        await ctx.reply("아쉽게도 일치하지 않습니다.")
+
+    wallet["balance"] += winnings
     save_config(config)
 
 @bot.command()
