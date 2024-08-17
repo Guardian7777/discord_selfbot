@@ -1717,6 +1717,11 @@ async def 도메인IP(ctx, arg):
 
 @bot.command()  # info about server
 async def 서버정보(ctx):  # members, roles, icon, emojis, threads, stickers, text_channels, forums
+
+    if ctx.guild is None:
+        await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
+        return
+    
     message = ctx.message
     guild = message.guild
 
