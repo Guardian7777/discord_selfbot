@@ -119,6 +119,7 @@ async def 도구(ctx):
 # 서버에서 관리자 권한 있을 경우에만 사용 가능함
 @bot.command()
 async def 관리(ctx):
+    prefix = config["prefix"]
     if ctx.guild is None:
         await ctx.reply("이 명령어는 서버에서만 사용할 수 있습니다.")
         return
@@ -129,6 +130,7 @@ async def 관리(ctx):
         return
 
     message = (
+
         "## 서버관리자 전용\n"
         f"> **1️⃣ 밴: 밴하려면 {prefix}밴 유저멘션 을 입력하세요**\n"
         f"> **2️⃣ 추방: 추방하려면 {prefix}추방 유저멘션 을 입력하세요**\n"
@@ -1306,8 +1308,102 @@ async def 도박(ctx):
         "## 도박\n"
         f"> **1️⃣ 확률도박: 확률도박을 하려면 {prefix}확률도박 [금액] 을 입력하세요**\n"
         f"> **2️⃣ 바카라: 바카라를 하려면 {prefix}바카라 [플레이어 / 뱅커 / 타이] [금액] 을 입력하세요**\n"
+        f"> **3️⃣ 블랙잭: 블랙잭을 하려면 {prefix}블랙잭 [금액] 을 입력하세요**\n"
     )
     await ctx.reply(message)
+
+# 카드 덱과 관련된 함수
+def blackjack_create_deck():
+    suits = ['하트', '다이아몬드', '클로버', '스페이드']
+    ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+    deck = [(rank, suit) for rank in ranks for suit in suits]
+    random.shuffle(deck)
+    return deck
+
+def blackjack_card_value(card):
+    rank, _ = card
+    if rank in ['J', 'Q', 'K']:
+        return 10
+    elif rank == 'A':
+        return 11
+    else:
+        return int(rank)
+
+def blackjack_hand_value(hand):
+    value = sum(blackjack_card_value(card) for card in hand)
+    num_aces = sum(1 for card in hand if card[0] == 'A')
+    while value > 21 and num_aces:
+        value -= 10
+        num_aces -= 1
+    return value
+
+# 블랙잭 명령어
+@bot.command()
+async def 블랙잭(ctx, amount: int):
+    user_id = str(ctx.author.id)
+    if amount <= 0:
+        await ctx.send('베팅 금액은 0보다 커야 합니다.')
+        return
+    if user_id not in user_wallets:
+        await initialize_wallet(user_id)
+    wallet = user_wallets[user_id]
+    balance = wallet["balance"]
+
+    if amount > balance:
+        await ctx.send('돈이 부족합니다.')
+        return
+    wallet["balance"] -= amount
+
+    deck = blackjack_create_deck()
+    player_hand = [deck.pop(), deck.pop()]
+    dealer_hand = [deck.pop(), deck.pop()]
+
+    player_hand_str = ', '.join(f'{rank} {suit}' for rank, suit in player_hand)
+    dealer_hand_str = f'{dealer_hand[0][0]} {dealer_hand[0][1]}, [미공개 카드]'
+
+    await ctx.send(f'> 당신의 패: {player_hand_str} (총 점수: {blackjack_hand_value(player_hand)})')
+    await ctx.send(f'> 딜러의 패: {dealer_hand_str}')
+
+    # 플레이어의 추가 카드 요청
+    def check(msg):
+        return msg.author == ctx.author and msg.channel == ctx.channel and msg.content.lower() in ['히트', '스탠드']
+
+    while blackjack_hand_value(player_hand) < 21:
+        await ctx.send('> 추가 카드를 원하시면 "히트"를 입력하세요. 턴을 종료하려면 "스탠드"를 입력하세요.')
+        msg = await bot.wait_for('message', check=check)
+        if msg.content.lower() == '히트':
+            player_hand.append(deck.pop())
+            player_hand_str = ', '.join(f'{rank} {suit}' for rank, suit in player_hand)
+            await ctx.send(f'> 당신이 뽑은 카드: {player_hand[-1][0]} {player_hand[-1][1]} (총 점수: {blackjack_hand_value(player_hand)})')
+            if blackjack_hand_value(player_hand) > 21:
+                await ctx.send(f'> 😭 **버스트! 당신이 졌습니다..** 당신의 최종 패: {player_hand_str} (총 점수: {blackjack_hand_value(player_hand)})')
+                await ctx.send(f'💸 {amount} 달러를 잃었습니다...')
+                return
+        if msg.content.lower() == '스탠드': 
+            break
+
+    dealer_hand_str = ', '.join(f'{rank} {suit}' for rank, suit in dealer_hand)
+    while blackjack_hand_value(dealer_hand) < 17:
+        dealer_hand.append(deck.pop())
+    dealer_hand_value = blackjack_hand_value(dealer_hand)
+    await ctx.send(f'> 딜러의 손: {dealer_hand_str} (총 점수: {dealer_hand_value})')
+
+    player_value = blackjack_hand_value(player_hand)
+    if dealer_hand_value > 21 or player_value > dealer_hand_value:
+        result = '> 🎉 **승리하셨습니다!**'
+        money_result = f"💰 {amount * 2} 달러를 얻었습니다!"
+        wallet['balance'] += amount * 2
+    elif player_value < dealer_hand_value:
+        result = '> 📛 **딜러가 승리했습니다!**'
+        money_result = f"💸 {amount} 달러를 잃었습니다..."
+    else:
+        result = '> 🔰 **무승부입니다!**'
+        money_result = f"💰 {amount} 달러를 돌려받았습니다."
+        wallet['balance'] += amount
+
+    save_config(config)
+    await ctx.send(result)
+    await ctx.send(money_result)
 
 @bot.command()
 async def 확률도박(ctx, amount: str):
@@ -1970,7 +2066,6 @@ async def 뱃지(ctx, arg:str):
         await ctx.reply('> **`레이트 리밋, 잠시후 다시 시도해주세요 (429)`**')
     else:
         await ctx.reply('> **`알수없는 오류`**')
-
 
 
 if __name__ == '__main__':
