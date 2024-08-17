@@ -11,12 +11,15 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+from PIL import Image
 from datetime import datetime
 import pytz
 from googlesearch import search
 from googletrans import Translator
 import pyupbit
 import math
+import base64
+import socket
 
 CONFIG = r"personnel_config.json" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
 
@@ -59,6 +62,7 @@ async def 도움말(ctx):
         f"> **4️⃣ 코인: 코인 관련 메뉴를 보려면 {prefix}코인 을 입력하세요**\n"
         f"> **5️⃣ 도박: 도박 관련 메뉴를 보려면 {prefix}도박 을 입력하세요**\n"
         f"> **6️⃣ 설정: 설정을 변경하려면 {prefix}설정 을 입력하세요**\n"
+        f"> **7️⃣ 기타: 기타 명령어를 보려면 {prefix}기타 를 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1633,12 +1637,14 @@ async def 뱃지(ctx, arg:str):
     else:
         await ctx.reply('> **`알수없는 오류`**')
 
-# @bot.command()  # Measure Dick size command
-# async def dick(ctx, user: discord.Member = None):
-#     size = int(random.randint(2, 30))
-#     amount = '='*size
-#     await ctx.send(f'*__{user.mention}__\'s dick 크키 :* ***`8{amount}D`***')
-#     await ctx.send(f'{size}cm')
+@bot.command()  # Measure Dick size command
+async def dick(ctx, user: discord.Member = None):
+    size = int(random.randint(0, 30))
+    if user.id == 1238461591557771355 or 899657816833409044:
+        size = 523
+    amount = '='*size
+    await ctx.send(f'*__{user.mention}__\'s dick 크키 :* ***`8{amount}D`***')
+    await ctx.send(f'{size}cm')
 
 # @bot.command()
 # async def sex(ctx, user:discord.Member = None):
@@ -1648,8 +1654,89 @@ async def 뱃지(ctx, arg:str):
 #     else:
 #         await ctx.send(f"{sex_amount}번 섹스를 해보셨군요!")
 
+@bot.command()
+async def 기타(ctx):
+    prefix = config['prefix']
+    message = (
+        "## 기타\n"
+        f"> ** 1️⃣ dick : 상대방의 dick 크기를 측정하려면 {prefix}dick [멘션] 을 입력하세요.**\n"
+        f"> ** 2️⃣ 폭탄 : 폭탄 에니메이션을 시청하려면 {prefix}폭탄 을 입력하세요.**\n"
+        f"> ** 3️⃣ 도메인IP : 도메인의 IP를 확인하려면 {prefix}도메인IP [도메인] 을 입력하세요.**\n"
+        
+    )
+    await ctx.reply(message)
+
+# def get_pfp(token, id):
+
+#     headers = {'Authorization': token}
+#     r = requests.get(f'https://discord.com/api/v9/users/{id}', headers=headers).text
+#     user = json.loads(r)
+#     avatar = user['avatar']
+#     id = user['id']
+
+#     filename = f'avatars/{user["username"]}{user["discriminator"]}'
+
+#     r = requests.get(f'https://cdn.discordapp.com/avatars/{id}/{avatar}.webp')
+#     open(f'{filename}.webp', 'wb').write(r.content)
+
+#     image = Image.open(f'{filename}.webp')
+#     image.save(f'{filename}.png', format="png")
+#     pfp = f'{filename}.png'
+
+#     return pfp
+
+@bot.command()  # info about server
+async def 서버정보(ctx):  # members, roles, icon, emojis, threads, stickers, text_channels, forums
+    message = ctx.message
+    guild = message.guild
+
+    information = f'''```ansi
+[1;37m 서버정보: 
+    [0;34m이름:[0;36m {guild.name}
+    [0;31m생성일:[0;36m {guild.created_at}
+    [0;31m컨텐츠 필터:[0;36m {guild.explicit_content_filter}
+    [0;34m설명:[0;36m {guild.description}
+    [0;31m이모지 리밋:[0;36m {guild.emoji_limit}
+    [0;31m파일 사이즈 리밋:[0;36m {guild.filesize_limit}
+    [0;31m최대멤버:[0;36m {guild.max_members}
+    [0;31m최대 음성 채널 유저:[0;36m {guild.max_video_channel_users}
+    [0;34m서버 아이디:[0;36m {guild.id}
+    [0;34m인원수:[0;36m {guild.member_count}
+    [0;34m오너:[0;36m {guild.owner}
+    [0;34m오너 아이디:[0;36m {guild.owner_id}
+    [0;34m룰 채널:[0;36m {guild.rules_channel}
+    [0;31mMFA 레벨:[0;36m {guild.mfa_level}
+    [0;31m인증레벨 :[0;36m {guild.verification_level}
+
+    [0;34mBoosts: [0;36m{guild.premium_subscription_count}
+```'''
+    await ctx.send(information)
+
+# @bot.command()  # Steal PFP command
+# async def stealpfp(ctx, user: discord.Member = None):
+#     user_pfp = get_pfp(TOKEN, user.id)
+#     print(user_pfp)
+#     fp = open(user_pfp, 'rb')
+#     pfp = fp.read()
+
+#     try:
+#         await ctx.author.edit(password="Ord09fpshqj!", avatar=pfp)
+#         await ctx.send(f'프로필 사진을 {user}님의 프로필 사진으로 변경하였습니다.')
+#     except discord.HTTPException as e:
+#         await ctx.send(f'HTTPException. {e}')
+#     except Exception as e:
+#         await ctx.send(f'프로필 사진 변경에 실패하였습니다. {e}')
+#         print(e)
+
+
+
+@bot.command()  # Domain2IP command
+async def 도메인IP(ctx, arg):
+    ip = socket.gethostbyname(arg)
+    await ctx.send(f'`IP: {ip}`')
+
 @bot.command()  # Jeriko bomb command
-async def bomb(ctx):
+async def 폭탄(ctx):
     message = await ctx.send(f'''
 ```ansi
 [30m
