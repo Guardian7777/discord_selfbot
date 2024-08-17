@@ -18,7 +18,7 @@ from googletrans import Translator
 import pyupbit
 import math
 
-CONFIG = r"콘픽경로" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
+CONFIG = r"personnel_config.json" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
 
 def load_config():
     with open(CONFIG, 'r', encoding='utf-8') as f:
@@ -1632,6 +1632,143 @@ async def 뱃지(ctx, arg:str):
         await ctx.reply('> **`레이트 리밋, 잠시후 다시 시도해주세요 (429)`**')
     else:
         await ctx.reply('> **`알수없는 오류`**')
+
+# @bot.command()  # Measure Dick size command
+# async def dick(ctx, user: discord.Member = None):
+#     size = int(random.randint(2, 30))
+#     amount = '='*size
+#     await ctx.send(f'*__{user.mention}__\'s dick 크키 :* ***`8{amount}D`***')
+#     await ctx.send(f'{size}cm')
+
+# @bot.command()
+# async def sex(ctx, user:discord.Member = None):
+#     sex_amount = int(random.randint(0, 10))
+#     if sex_amount == 0:
+#         await ctx.send("한번도 섹스를 안해보셨군요!")
+#     else:
+#         await ctx.send(f"{sex_amount}번 섹스를 해보셨군요!")
+
+@bot.command()  # Jeriko bomb command
+async def bomb(ctx):
+    message = await ctx.send(f'''
+```ansi
+[30m
+        |\**/|      
+        | == |
+         |  |
+         |  |
+         \  /
+          \/
+.
+.
+.
+```
+''')
+    time.sleep(0.4)
+    await message.edit(content='''
+```ansi
+[30m
+        |\**/|      
+        | == |
+         |  |
+         |  |
+         \  /
+          \/
+.
+.
+```
+''')
+
+    time.sleep(0.4)
+    await message.edit(content='''
+    ```ansi
+    [30m
+        |\**/|      
+        | == |
+         |  |
+         |  |
+         \  /
+          \/
+.
+    ```
+    ''')
+
+    time.sleep(0.4)
+    await message.edit(content='''
+    ```ansi
+    [30m
+        |\**/|      
+        | == |
+         |  |
+         |  |
+         \  /
+          \/
+    ```
+    ''')
+
+    time.sleep(0.4)
+    await message.edit(content='''
+    ```ansi
+    [31m
+          _ ._  _ , _ ._
+        (_ ' ( `  )_  .__)
+      ( (  (    )   `)  ) _)
+     (__ (_   (_ . _) _) ,__)
+         `~~`\ ' . /`~~`
+              ;   ;
+              /   \|
+_____________/_ __ \_____________
+    ```
+    ''')
+
+    time.sleep(0.4)
+    await message.edit(content='''
+        ```ansi
+        [33m
+                             ____
+                     __,-~~/~    `---.
+                   _/_,---(      ,    )
+               __ /        <    /   )  \___
+- ------===;;;'====------------------===;;;===----- -  -
+                  \/  ~"~"~"~"~"~\~"~)~"/
+                  (_ (   \  (     >    \)
+                   \_( _ <         >_>'
+                      ~ `-i' ::>|--"
+                          I;|.|.|
+                         <|i::|i|`.
+                        (` ^'"`-' ")
+        ```
+        ''')
+
+    time.sleep(0.4)
+    await message.edit(content='''
+            ```ansi
+            [33m
+                               ________________
+                          ____/ (  (    )   )  \___
+                         /( (  (  )   _    ))  )   )\_
+                       ((     (   )(    )  )   (   )  )
+                     ((/  ( _(   )   (   _) ) (  () )  )
+                    ( (  ( (_)   ((    (   )  .((_ ) .  )_
+                   ( (  )    (      (  )    )   ) . ) (   )
+                  (  (   (  (   ) (  _  ( _) ).  ) . ) ) ( )
+                  ( (  (   ) (  )   (  ))     ) _)(   )  )  )
+                 ( (  ( \ ) (    (_  ( ) ( )  )   ) )  )) ( )
+                  (  (   (  (   (_ ( ) ( _    )  ) (  )  )   )
+                 ( (  ( (  (  )     (_  )  ) )  _)   ) _( ( )
+                  ((  (   )(    (     _    )   _) _(_ (  (_ )
+                   (_((__(_(__(( ( ( |  ) ) ) )_))__))_)___)
+                   ((__)        \.\||lll|l||///          \_))
+                            (   /(/ (  )  ) )\   )
+                          (    ( ( ( | | ) ) )\   )
+                           (   /(| / ( )) ) ) )) )
+                         (     ( ((((_(|)_)))))     )
+                          (      ||\(|(|)|/||     )
+                        (        |(||(||)||||        )
+                          (     //|/l|||)|\.\ \     )
+                        (/ / //  /|//||||\.\  \ \  \ _)
+            ```
+            ''')
 
 if __name__ == '__main__':
     bot.run(TOKEN, bot=False)
