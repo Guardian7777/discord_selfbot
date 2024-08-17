@@ -19,6 +19,7 @@ from googletrans import Translator
 import pyupbit
 import math
 import base64
+import aiohttp
 import socket
 
 CONFIG = r"personal_config.json" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
@@ -1445,6 +1446,7 @@ async def 기타(ctx):
         f"> **5️⃣ dick : 상대방의 dick 크기를 측정하려면 {prefix}dick [멘션] 을 입력하세요**\n"
         f"> **6️⃣ 도메인IP : 도메인의 IP를 확인하려면 {prefix}도메인IP [도메인] 을 입력하세요**\n"
         f"> **7️⃣ 서버정보: 서버정보를 확인하려면 {prefix}서버정보 를 입력하세요**\n"
+        f"> **8️⃣ IP조회: IP를 조회하려면 {prefix}IP조회 [아이피 or 도메인] 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1710,8 +1712,6 @@ _____________/_ __ \_____________
 @bot.command()  # Measure Dick size command
 async def dick(ctx, user: discord.Member = None):
     size = int(random.randint(0, 30))
-    if user.id == 1238461591557771355 or 899657816833409044:
-        size = 523
     amount = '='*size
     await ctx.send(f'*__{user.mention}__\'s dick 크키 :* ***`8{amount}D`***')
     await ctx.send(f'{size}cm')
@@ -1731,27 +1731,126 @@ async def 서버정보(ctx):  # members, roles, icon, emojis, threads, stickers,
     message = ctx.message
     guild = message.guild
 
-    information = f'''```ansi
-[1;37m 서버정보: 
-    [0;34m이름:[0;36m {guild.name}
-    [0;31m생성일:[0;36m {guild.created_at}
-    [0;31m컨텐츠 필터:[0;36m {guild.explicit_content_filter}
-    [0;34m설명:[0;36m {guild.description}
-    [0;31m이모지 리밋:[0;36m {guild.emoji_limit}
-    [0;31m파일 사이즈 리밋:[0;36m {guild.filesize_limit}
-    [0;31m최대멤버:[0;36m {guild.max_members}
-    [0;31m최대 음성 채널 유저:[0;36m {guild.max_video_channel_users}
-    [0;34m서버 아이디:[0;36m {guild.id}
-    [0;34m인원수:[0;36m {guild.member_count}
-    [0;34m오너:[0;36m {guild.owner}
-    [0;34m오너 아이디:[0;36m {guild.owner_id}
-    [0;34m룰 채널:[0;36m {guild.rules_channel}
-    [0;31mMFA 레벨:[0;36m {guild.mfa_level}
-    [0;31m인증레벨 :[0;36m {guild.verification_level}
-
-    [0;34mBoosts: [0;36m{guild.premium_subscription_count}
-```'''
+    information = (
+        f"> `서버 이름 : {guild.name}`\n"
+        f"> `서버 아이디 : {guild.id}`\n"
+        f"> `서버 설명 : {guild.description}`\n"
+        f"> `생성일 : {guild.created_at}`\n"
+        f"> `멤버 수 : {guild.member_count}`\n"
+        f"> `오너 아이디 : {guild.owner_id}`\n"
+        f"> `컨텐츠 필터 : {guild.explicit_content_filter}`\n"
+        f"> `MFA 레벨 : {guild.mfa_level}`\n"
+        f"> `부스트 횟수 : {guild.premium_subscription_count}`\n"
+        f"> `서버 아이콘 :` ||{guild.icon_url}||\n"
+        f"> `서버 배너 :` ||{guild.banner_url}||\n"
+    )
     await ctx.send(information)
+
+@bot.command()
+async def 토큰체커(ctx, usertoken=None):
+    await ctx.message.delete()
+    headers = {
+        'Authorization': usertoken,
+        'Content-Type': 'application/json'
+    }
+
+    languages = {
+    'da'    : 'Danish, Denmark',
+    'de'    : 'German, Germany',
+    'en-GB' : 'English, United Kingdom',
+    'en-US' : 'English, United States',
+    'es-ES' : 'Spanish, Spain',
+    'fr'    : 'French, France',
+    'hr'    : 'Croatian, Croatia',
+    'lt'    : 'Lithuanian, Lithuania',
+    'hu'    : 'Hungarian, Hungary',
+    'nl'    : 'Dutch, Netherlands',
+    'no'    : 'Norwegian, Norway',
+    'pl'    : 'Polish, Poland',
+    'pt-BR' : 'Portuguese, Brazilian, Brazil',
+    'ro'    : 'Romanian, Romania',
+    'fi'    : 'Finnish, Finland',
+    'sv-SE' : 'Swedish, Sweden',
+    'vi'    : 'Vietnamese, Vietnam',
+    'tr'    : 'Turkish, Turkey',
+    'cs'    : 'Czech, Czechia, Czech Republic',
+    'el'    : 'Greek, Greece',
+    'bg'    : 'Bulgarian, Bulgaria',
+    'ru'    : 'Russian, Russia',
+    'uk'    : 'Ukranian, Ukraine',
+    'th'    : 'Thai, Thailand',
+    'zh-CN' : 'Chinese, China',
+    'ja'    : 'Japanese',
+    'zh-TW' : 'Chinese, Taiwan',
+    'ko'    : 'Korean, Korea'
+    }
+
+    try:
+        res = requests.get('https://discordapp.com/api/v6/users/@me', headers=headers)
+    except:
+        await ctx.send(f"[ERROR]: An error occurred while sending request")
+
+    if res.status_code == 200:
+        res_json = res.json()
+        user_name = f'{res_json["username"]}#{res_json["discriminator"]}'
+        user_id = res_json['id']
+        avatar_id = res_json['avatar']
+        avatar_url = f'https://cdn.discordapp.com/avatars/{user_id}/{avatar_id}.gif'
+        phone_number = res_json['phone']
+        email = res_json['email']
+        mfa_enabled = res_json['mfa_enabled']
+        flags = res_json['flags']
+        locale = res_json['locale']
+        verified = res_json['verified']
+        days_left = ""
+        language = languages.get(locale)
+        from datetime import datetime
+        creation_date = datetime.utcfromtimestamp(((int(user_id) >> 22) + 1420070400000) / 1000).strftime('%d-%m-%Y %H:%M:%S UTC')
+        has_nitro = False
+        res = requests.get('https://discordapp.com/api/v6/users/@me/billing/subscriptions', headers=headers)
+        nitro_data = res.json()
+        has_nitro = bool(len(nitro_data) > 0)
+
+        if has_nitro:
+            d1 = datetime.strptime(nitro_data[0]["current_period_end"].split('.')[0], "%Y-%m-%dT%H:%M:%S")
+            d2 = datetime.strptime(nitro_data[0]["current_period_start"].split('.')[0], "%Y-%m-%dT%H:%M:%S")
+            days_left = abs((d2 - d1).days)
+
+        try:
+            embed = f"""**토큰 정보**\n
+> :dividers: __기본정보__\n\t유저네임: `{user_name}`\n\t유저 아이디: `{user_id}`\n\t생성일: `{creation_date}`\n\t아바타 링크: `{avatar_url if avatar_id else "None"}`
+> :crystal_ball: __니트로 정보__\n\t니트로 상태: `{has_nitro}`\n\t남은 기간: `{days_left if days_left else "None"} 일`
+> :incoming_envelope: __추가 정보__\n\t휴대폰 번호: ||`{phone_number if phone_number else "None"}`||\n\t이메일: ||`{email if email else "None"}`||
+> :shield: __계정 보안__\n\t2차 인증 여부: `{mfa_enabled}`\n\t플래그: `{flags}`
+> :paperclip: __기타__\n\t지역: `{locale} ({language})`\n\t이메일 인증여부: `{verified}`"""
+            await ctx.send(embed)
+        except Exception as e:
+            await ctx.send(e)
+
+    elif res.status_code == 401:
+        await ctx.send(f"[ERROR]: Invalid token")
+    else:
+        await ctx.send(f"[ERROR]: An error occurred while sending request")
+
+#Locate a ip address
+@bot.command()
+async def IP조회(ctx, *, ipaddr: str = '1.1.1.1'):
+    await ctx.message.delete()
+    try:
+        r = requests.get(f'http://ip-api.com/json/{ipaddr}')
+        geo = r.json()
+        embed = f"""**아이피 정보**\n
+> :pushpin: `아이피`\n*{geo['query']}*
+> :globe_with_meridians: `지역`\n*{geo['country']} - {geo['regionName']}*
+> :department_store: `도시`\n*{geo['city']} ({geo['zip']})*
+> :map: `위도 - 경도`\n*{geo['lat']} - {geo['lon']}*
+> :satellite: `ISP`\n*{geo['isp']}*
+> :robot: `회사`\n*{geo['org'] if geo['org'] else "None"}*
+> :alarm_clock: `타임존`\n*{geo['timezone']}*
+> :electric_plug: `As`\n*{geo['as']}*"""
+        await ctx.send(embed)
+    except Exception as e:
+        await ctx.send(f"[에러]: {e}")
 
 # @bot.command()
 # async def sex(ctx, user:discord.Member = None):
@@ -1871,6 +1970,8 @@ async def 뱃지(ctx, arg:str):
         await ctx.reply('> **`레이트 리밋, 잠시후 다시 시도해주세요 (429)`**')
     else:
         await ctx.reply('> **`알수없는 오류`**')
+
+
 
 if __name__ == '__main__':
     bot.run(TOKEN, bot=False)
