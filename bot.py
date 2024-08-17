@@ -1310,6 +1310,7 @@ async def 도박(ctx):
         f"> **2️⃣ 바카라: 바카라를 하려면 {prefix}바카라 [플레이어 / 뱅커 / 타이] [금액] 을 입력하세요**\n"
         f"> **3️⃣ 블랙잭: 블랙잭을 하려면 {prefix}블랙잭 [금액] 을 입력하세요**\n"
         f"> **4️⃣ 슬롯머신: 슬롯머신을 돌리려면 {prefix}슬롯머신 [금액] [이지 / 노말 / 하드] 을 입력하세요**\n"
+        f"> **5️⃣ 경마: 경마를 하려면 {prefix}경마 [플레이어 이름 (공백 구분)] 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1597,6 +1598,34 @@ async def 슬롯머신(ctx, amount: int, difficulty: str = "이지"):
 
     wallet["balance"] += winnings
     save_config(config)
+
+@bot.command()
+async def 경마(ctx, *horse_names):
+    if len(horse_names) < 2:
+        await ctx.reply("최소 두 마리 이상의 말을 입력해주세요.")
+        return
+
+    track_length = 20
+    horses = {name: track_length for name in horse_names}
+    message = await ctx.send("경마 시작!")
+
+    def render_track():
+        track = ""
+        for name, position in horses.items():
+            track += f"{name}: {'-' * (track_length - position)}{'🐎'}{'-' * position}\n"
+        return track
+
+    while min(horses.values()) > 0:
+        for name in horses:
+            horses[name] -= random.randint(0, 2)
+            if horses[name] < 0:
+                horses[name] = 0
+        await message.edit(content=f"```\n{render_track()}\n```")
+        await asyncio.sleep(1)
+
+    sorted_horses = sorted(horses.items(), key=lambda x: x[1])
+    results = "\n".join([f"{i+1}위: {name}" for i, (name, _) in enumerate(sorted_horses)])
+    await ctx.send(f"경마 결과:\n{results}")
 
 @bot.command()
 async def 기타(ctx):
