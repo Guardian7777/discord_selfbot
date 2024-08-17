@@ -1534,7 +1534,7 @@ async def 강화(ctx, item_name: str):
         # 강화 실패
         if current_level > 0:
             user_enhance_records[user_id][item_name]["enhance_level"] -= 1
-            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! {current_level - 1}강으로 강화 레벨이 감소하였습니다.")
+            await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! {current_level}강으로 강화 레벨이 감소하였습니다.")
         else:
             await ctx.send(f"{ctx.author.mention}, {item_name} 강화 실패! 최하 강화 레벨입니다.")
 
@@ -1549,7 +1549,32 @@ def get_success_rate(level):
     if level < len(success_rates):
         return success_rates[level]
     else:
-        await ctx.reply('> **`알수없는 오류`**')
+        return success_rates[-1]  # 최대 레벨 이후는 마지막 확률 유지
+
+def get_fail_chance(level):
+    # 강화 실패 시 터질 확률 설정
+    fail_chances = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35]
+    if level >= 10:
+        if level - 10 < len(fail_chances):
+            return fail_chances[level - 10]
+        else:
+            return fail_chances[-1]  # 최대 확률 유지
+    else:
+        return 0.0
+
+@bot.command()
+async def 강화목록(ctx):
+    user_id = ctx.author.id
+    
+    if user_id not in user_enhance_records or not user_enhance_records[user_id]:
+        await ctx.send("강화한 아이템이 없습니다.")
+        return
+    
+    message = f"{ctx.author.mention}의 강화 목록:\n"
+    for item_name, record in user_enhance_records[user_id].items():
+        message += f"{item_name}: {record['enhance_level']}강\n"
+    
+    await ctx.send(message)
 
 @bot.command()  # Measure Dick size command
 async def dick(ctx, user: discord.Member = None):
