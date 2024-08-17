@@ -1311,6 +1311,7 @@ async def 도박(ctx):
         f"> **3️⃣ 블랙잭: 블랙잭을 하려면 {prefix}블랙잭 [금액] 을 입력하세요**\n"
         f"> **4️⃣ 슬롯머신: 슬롯머신을 돌리려면 {prefix}슬롯머신 [금액] [이지 / 노말 / 하드] 을 입력하세요**\n"
         f"> **5️⃣ 경마: 경마를 하려면 {prefix}경마 [플레이어 이름 (공백 구분)] 을 입력하세요**\n"
+        f"> **6️⃣ 인디언포커 : 인디언포커를 하려면 {prefix}인디언포커 [금액] 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1626,6 +1627,82 @@ async def 경마(ctx, *horse_names):
     sorted_horses = sorted(horses.items(), key=lambda x: x[1])
     results = "\n".join([f"{i+1}위: {name}" for i, (name, _) in enumerate(sorted_horses)])
     await ctx.send(f"경마 결과:\n{results}")
+
+@bot.command()
+async def 인디언포커(ctx, amount: int):
+    user_id = str(ctx.author.id)
+    if user_id not in user_wallets:
+        await initialize_wallet(user_id)
+    wallet = user_wallets[user_id]
+    balance = wallet["balance"]
+
+    if amount > balance:
+        await ctx.send("잔고가 부족합니다.")
+        return
+    elif amount <= 0:
+        await ctx.send("금액은 0보다 커야 합니다.")
+        return
+
+    wallet["balance"] -= amount
+    initial_bet = amount
+    total_pot = amount * 2  # 초기 배당금은 플레이어와 봇의 베팅액 합계
+
+    # 카드 덱 생성
+    deck = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    random.shuffle(deck)
+
+    player_card = deck.pop()
+    bot_card = deck.pop()
+
+    await ctx.send(f"{ctx.author.mention}님이 {amount}달러를 베팅했습니다.")
+    await ctx.send(f"상대방의 카드는 {bot_card}입니다. '고' 또는 '스탑'을 입력하세요.")
+
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel and m.content.lower() in ['고', '스탑']
+
+    for turn in range(1, 21):
+        try:
+            msg = await bot.wait_for('message', check=check, timeout=30.0)
+        except asyncio.TimeoutError:
+            await ctx.send("시간 초과로 인해 게임이 종료되었습니다.")
+            wallet["balance"] += amount  # 베팅액 반환
+            save_config(config)
+            return
+
+        if msg.content.lower() == '스탑':
+            break
+
+        # 봇의 선택
+        if player_card >= 10:
+            bot_choice = '스탑'
+        else:
+            bot_choice = '고' if random.random() > 0.3 else '스탑'
+
+        await ctx.send(f"봇의 선택: {bot_choice}")
+
+        if bot_choice == '스탑':
+            wallet["balance"] += total_pot
+            await ctx.send(f"봇이 스탑을 선택했습니다. 당신의 카드는 {player_card}였습니다.{total_pot}달러를 획득했습니다.")
+            save_config(config)
+            return
+
+        total_pot += initial_bet * 2  # 한 턴 지날 때마다 배당금 추가
+
+        await ctx.send(f"턴 {turn}이(가) 종료되었습니다. 현재 배당금: {total_pot}달러. '고' 또는 '스탑'을 입력하세요.")
+
+    await ctx.send(f"게임 종료! 당신의 카드는 {player_card}였습니다.")
+
+    if player_card > bot_card:
+        wallet["balance"] += total_pot
+        await ctx.send(f"축하합니다! {ctx.author.mention}님이 이겼습니다. {total_pot}달러를 획득했습니다.")
+    elif player_card < bot_card:
+        wallet["balance"] -= total_pot
+        await ctx.send(f"아쉽게도 {ctx.author.mention}님이 졌습니다. {total_pot / 2}달러를 잃었습니다.")
+    else:
+        wallet["balance"] += total_pot / 2
+        await ctx.send(f"무승부입니다. {ctx.author.mention}님이 {total_pot / 2}달러를 돌려받았습니다.")
+
+    save_config(config)
 
 @bot.command()
 async def 기타(ctx):
