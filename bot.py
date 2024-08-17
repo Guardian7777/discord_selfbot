@@ -231,6 +231,9 @@ async def 티켓(ctx, action: str, *, member: discord.Member):
                 member: discord.PermissionOverwrite(read_messages=True, send_messages=True)
             }
             channel = await ctx.guild.create_text_channel(channel_name, overwrites=overwrites)
+            
+            await channel.send(f"{member.mention}님, 무엇을 도와드릴까요?")
+
             await ctx.reply(f"{member.mention}님의 티켓 채널이 생성되었습니다.")
         except Exception as e:
             await ctx.reply(f"오류 발생: {e}")
