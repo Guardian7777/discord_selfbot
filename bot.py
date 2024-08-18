@@ -64,8 +64,9 @@ async def 도움말(ctx):
         f"> **3️⃣ 브롤: 브롤 관련 메뉴를 보려면 {prefix}브롤 을 입력하세요**\n"
         f"> **4️⃣ 코인: 코인 관련 메뉴를 보려면 {prefix}코인 을 입력하세요**\n"
         f"> **5️⃣ 도박: 도박 관련 메뉴를 보려면 {prefix}도박 을 입력하세요**\n"
-        f"> **6️⃣ 기타: 기타 명령어를 보려면 {prefix}기타 를 입력하세요**\n"
-        f"> **7️⃣ 설정: 설정을 변경하려면 {prefix}설정 을 입력하세요**\n"
+        f"> **6️⃣ 당근: 당근 관련 메뉴를 보려면 {prefix}당근 을 입력하세요**\n"
+        f"> **7️⃣ 기타: 기타 명령어를 보려면 {prefix}기타 를 입력하세요**\n"
+        f"> **8️⃣ 설정: 설정을 변경하려면 {prefix}설정 을 입력하세요**\n"
     )
     await ctx.reply(message)
 
@@ -1720,6 +1721,173 @@ async def 인디언포커(ctx, amount: int):
         await ctx.send(f"무승부입니다. {ctx.author.mention}님이 {total_pot / 2}달러를 돌려받았습니다.")
 
     save_config(config)
+
+@bot.command()
+async def 당근(ctx):
+    prefix = config["prefix"]
+    message = (
+        "## 당근 메뉴\n"
+        f"> **1️⃣ 매물: 매물을 확인하려면 {prefix}당근매물 을 입력하세요**\n"
+        f"> **2️⃣ 구매: 마음에 드는 매물이 있다면 {prefix}당근구매 [매물 번호] 를 입력하세요**\n"
+        f"> **3️⃣ 판매: 매물을 판매하려면 {prefix}당근판매 [매물 이름] [가격] 를 입력하세요**\n"
+        f"> **4️⃣ 수정: 가격이 너무 높으면 매물이 판매가 되지 않습니다! {prefix}당근가격수정 [매물 이름] [수정할 가격]을 입력하세요**\n"
+        f"> **5️⃣ 삭제: 판매를 원하지 않다면 {prefix}당근삭제 [매물 이름] 를 입력하세요**\n" # config.json에 있는 promotion에 링크나 내용 작성
+        f"> **6️⃣ 인벤토리: 가지고 있는 상품을 확인하려면 {prefix}인벤토리 를 입력하세요**\n"
+        f"> **7️⃣ 판매목록: 내가 올려둔 매물을 확인하려면 {prefix}내판매목록 을 입력하세요**\n"
+    )
+    await ctx.reply(message)
+
+products = {
+    "아이패드 프로": {"base_price": 1100, "image": "https://cdn.discordapp.com/attachments/1274718999933882368/1274720239661355059/705912796736831-8a02de4f-6fb4-4814-ad93-60e7cc0f598e.jpg?ex=66c3473c&is=66c1f5bc&hm=aff52d86cbc888d1b6164c5e5359793d4eae9535090295ccb982eb12a25fa875&"},
+    "아이폰14프로": {"base_price": 700, "image": "https://cdn.discordapp.com/attachments/1274718999933882368/1274720240265072701/466x466_0316180455_6412dbb770893.jpg?ex=66c3473c&is=66c1f5bc&hm=9095071fa9891cb53a41773c40c2aaef9bfb59a015e9275ecf10f89ac212af78&"},
+    "갤럭시 s24 울트라": {"base_price": 1300, "image": "https://cdn.discordapp.com/attachments/1274718999933882368/1274720239959015486/2625653808702891-52aa57fa-0ddc-49a2-a6b3-2913d77b3793.jpg?ex=66c3473c&is=66c1f5bc&hm=44c45b612f3814298032b451ff73a664e37db8cc1ce7ae84542abf40aa86e2c5&"},
+    "맥북 프로": {"base_price": 2500, "image": "https://cdn.discordapp.com/attachments/1274718999933882368/1274720239350710306/769df9aa-da0a-4884-b300-61a23cfbf0d0.jpg?ex=66c3473c&is=66c1f5bc&hm=d66183c10d619c252fb5ded538087c51a9bc259794d069a99e427a790a5e1f16&"}
+}
+
+# 사용자 인벤토리 및 판매 목록
+user_inventories = {}
+user_listings = {}
+current_market_items = []
+
+async def check_auto_buy(ctx, user_id, item_name, price):
+    base_price = products[item_name]["base_price"]
+    if price <= base_price:
+        await asyncio.sleep(random.uniform(1, 5))  # 1~5초 대기
+        if user_id in user_listings and item_name in user_listings[user_id]:
+            del user_listings[user_id][item_name]
+            wallet = user_wallets[user_id]
+            wallet["balance"] += price
+            await ctx.send(f"## 🎉 자동 판매 완료!\n> **{item_name}** 매물이 판매되었습니다!\n> 💰 **{price}달러**가 입금되었습니다!")
+            return True
+    return False
+
+@bot.command()
+async def 당근매물(ctx):
+    global current_market_items
+    num_items = random.randint(1, 5)
+    selected_items = random.sample(list(products.items()), num_items)
+    
+    current_market_items = []
+    message = "## 🥕 당근마켓 상품 목록\n"
+    for i, (item, details) in enumerate(selected_items, 1):
+        price = int(details["base_price"] * random.uniform(0.8, 1.2))
+        current_market_items.append((item, price, details['image']))
+        image_url = f"{details['image']}?width=30&height=30"
+        message += f"{i}. [{item}: {price}달러]({image_url})\n\n"
+    
+    await ctx.send(message)
+
+@bot.command()
+async def 당근구매(ctx, index: int):
+    global current_market_items
+    user_id = str(ctx.author.id)
+    if user_id not in user_wallets:
+        await initialize_wallet(user_id)
+    wallet = user_wallets[user_id]
+    
+    if not current_market_items:
+        await ctx.send("## ⚠️ 오류\n> 현재 표시된 상품 목록이 없습니다.\n> !당근 명령어를 먼저 사용해주세요.")
+        return
+    
+    if index < 1 or index > len(current_market_items):
+        await ctx.send("## ⚠️ 오류\n> 올바른 상품 번호를 입력해주세요.")
+        return
+    
+    item, price, image_url = current_market_items[index - 1]
+    
+    if wallet["balance"] < price:
+        await ctx.send("## ⚠️ 잔액 부족\n> 잔액이 부족합니다.")
+        return
+    
+    wallet["balance"] -= price
+    if user_id not in user_inventories:
+        user_inventories[user_id] = {}
+    if item not in user_inventories[user_id]:
+        user_inventories[user_id][item] = 0
+    user_inventories[user_id][item] += 1
+    
+    image_url_with_size = f"{image_url}?width=30&height=30"
+    await ctx.send(f"## 🎉 구매 완료!\n> **{item}**을(를) **{price}달러**에 구매했습니다.\n> 💼 남은 잔액: **{wallet['balance']}달러**\n> [{item}]({image_url_with_size})")
+
+@bot.command()
+async def 당근판매(ctx, *, args):
+    user_id = str(ctx.author.id)
+    item_name, price = args.rsplit(' ', 1)
+    price = int(price)
+    
+    if user_id not in user_inventories or item_name not in user_inventories[user_id] or user_inventories[user_id][item_name] == 0:
+        await ctx.send("## ⚠️ 오류\n> 해당 아이템을 보유하고 있지 않습니다.")
+        return
+    
+    if user_id not in user_listings:
+        user_listings[user_id] = {}
+    user_listings[user_id][item_name] = price
+    user_inventories[user_id][item_name] -= 1
+    
+    await ctx.send(f"## 📌 판매 등록 완료\n> **{item_name}**을(를) **{price}달러**에 판매 등록했습니다.")
+    
+    # 자동 구매 확인
+    sold = await check_auto_buy(ctx, user_id, item_name, price)
+    if not sold:
+        await ctx.send("> ⏳ 아직 구매자가 나타나지 않았습니다.")
+
+@bot.command()
+async def 당근가격수정(ctx, *, args):
+    user_id = str(ctx.author.id)
+    item_name, new_price = args.rsplit(' ', 1)
+    new_price = int(new_price)
+    
+    if user_id not in user_listings or item_name not in user_listings[user_id]:
+        await ctx.send("## ⚠️ 오류\n> 해당 아이템의 판매 등록이 없습니다.")
+        return
+    
+    user_listings[user_id][item_name] = new_price
+    await ctx.send(f"## ✏️ 가격 수정 완료\n> **{item_name}**의 가격을 **{new_price}달러**로 수정했습니다.")
+    
+    # 자동 구매 확인
+    sold = await check_auto_buy(ctx, user_id, item_name, new_price)
+    if not sold:
+        await ctx.send("> ⏳ 아직 구매자가 나타나지 않았습니다.")
+
+@bot.command()
+async def 당근삭제(ctx, *, item_name):
+    user_id = str(ctx.author.id)
+    
+    if user_id not in user_listings or item_name not in user_listings[user_id]:
+        await ctx.send("## ⚠️ 오류\n> 해당 아이템의 판매 등록이 없습니다.")
+        return
+    
+    del user_listings[user_id][item_name]
+    if user_id not in user_inventories:
+        user_inventories[user_id] = {}
+    if item_name not in user_inventories[user_id]:
+        user_inventories[user_id][item_name] = 0
+    user_inventories[user_id][item_name] += 1
+    
+    await ctx.send(f"## 🗑️ 판매 등록 삭제\n> **{item_name}**의 판매 등록을 삭제했습니다.")
+
+@bot.command()
+async def 인벤토리(ctx):
+    user_id = str(ctx.author.id)
+    if user_id not in user_inventories or not user_inventories[user_id]:
+        await ctx.send("## 🎒 인벤토리\n> 인벤토리가 비어있습니다.")
+        return
+    
+    inventory_list = "\n".join([f"> **{item}**: {count}개" for item, count in user_inventories[user_id].items() if count > 0])
+    await ctx.send(f"## 🎒 {ctx.author.name}의 인벤토리\n{inventory_list}")
+
+@bot.command()
+async def 내판매목록(ctx):
+    user_id = str(ctx.author.id)
+    if user_id not in user_listings or not user_listings[user_id]:
+        await ctx.send("## 📋 판매 목록\n> 판매 중인 아이템이 없습니다.")
+        return
+    
+    message = f"## 📋 {ctx.author.name}의 판매 목록\n"
+    for item, price in user_listings[user_id].items():
+        image_url = f"{products[item]['image']}?width=30&height=30"
+        message += f"[{item}: {price}달러]({image_url})\n\n"
+    await ctx.send(message)
 
 @bot.command()
 async def 기타(ctx):
