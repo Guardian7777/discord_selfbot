@@ -13,7 +13,7 @@
 <img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=Discord&logoColor=white">
 
 - main Dev : **hm_son**
-- my server : https://discord.gg/SVRDZBsYNv
+- my server : https://discord.gg/kXQbDr4wUf
 - supporting server : https://discord.gg/pulservice
 
 - Collaborators : **kimchaewon_cute**, **no.1_jj**, **bcpulservice**, **1eldorado002**, **onsae091**
