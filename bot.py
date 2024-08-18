@@ -11,7 +11,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 import pytz
 from googlesearch import search
@@ -21,6 +21,8 @@ import math
 import base64
 import aiohttp
 import socket
+from datetime import timedelta
+import re
 
 CONFIG = r"personal_config.json" # 만약 A-SHELL 에서 구동하면 앞에 r 빼고 올려둔 파일 다 A-SHELL 폴더에 넣고 "./config.json" 으로 바꾸셈
 
@@ -136,11 +138,26 @@ async def 관리(ctx):
         f"> **2️⃣ 추방: 추방하려면 {prefix}추방 유저멘션 을 입력하세요**\n"
         f"> **3️⃣ 별명: 별명을 변경하려면 {prefix}별명 유저멘션 새별명 을 입력하세요**\n"
         f"> **4️⃣ 역할 생성/삭제: 역할을 생성 또는 삭제하려면 {prefix}역할 생성/제거 역할 이름 을 입력하세요 **\n"
-        f"> **5️⃣ 역할 부여/회수: 역할을 부여 또는 회수하려면 {prefix}부여/회수 역할 이름 을 입력하세요**\n"
-        f"> **6️⃣ 티켓 생성/삭제: 티켓을 생성 또는 삭제하려면 {prefix}티켓 생성/삭제 유저멘션 을 입력하세요 **\n"
-        f"> **7️⃣ 티켓 열기/닫기: 티켓을 열거나 닫으려 {prefix}티켓 열기/닫기 유저멘션 을 입력하세요**\n"
+        f"> **5️⃣ 부여 / 회수: 역할을 부여 또는 회수하려면 {prefix}부여/회수 역할 이름 을 입력하세요**\n"
+        f"> **6️⃣ 티켓 생성 / 삭제: 티켓을 생성 또는 삭제하려면 {prefix}티켓 생성/삭제 유저멘션 을 입력하세요 **\n"
+        f"> **7️⃣ 티켓 열기 / 닫기: 티켓을 열거나 닫으려 {prefix}티켓 열기/닫기 유저멘션 을 입력하세요**\n"
     )
     await ctx.reply(message)
+
+
+@bot.command()
+async def unmute(ctx, member: discord.Member):
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.send("이 명령어를 사용할 권한이 없습니다.")
+        return
+
+    try:
+        await member.timeout(None)
+        await ctx.send(f"{member.mention}님의 음소거를 해제했습니다.")
+    except discord.Forbidden:
+        await ctx.send("이 사용자의 음소거를 해제할 권한이 없습니다.")
+    except discord.HTTPException as e:
+        await ctx.send(f"오류 발생: {e}")
 
 @bot.command()
 async def 밴(ctx, member: discord.Member):
@@ -1654,8 +1671,8 @@ async def 인디언포커(ctx, amount: int):
     player_card = deck.pop()
     bot_card = deck.pop()
 
-    await ctx.send(f"{ctx.author.mention}님이 {amount}달러를 베팅했습니다.")
-    await ctx.send(f"상대방의 카드는 {bot_card}입니다. '고' 또는 '스탑'을 입력하세요.")
+    await ctx.send(f"> {ctx.author.mention}님이 {amount}달러를 베팅했습니다.")
+    await ctx.send(f"> 상대방의 카드는 {bot_card}입니다. '고' 또는 '스탑'을 입력하세요.")
 
     def check(m):
         return m.author == ctx.author and m.channel == ctx.channel and m.content.lower() in ['고', '스탑']
@@ -2266,7 +2283,6 @@ async def 뱃지(ctx, arg:str):
         await ctx.reply('> **`레이트 리밋, 잠시후 다시 시도해주세요 (429)`**')
     else:
         await ctx.reply('> **`알수없는 오류`**')
-
 
 if __name__ == '__main__':
     bot.run(TOKEN, bot=False)
