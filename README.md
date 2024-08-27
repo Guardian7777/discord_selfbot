@@ -16,7 +16,7 @@
 - my server : https://discord.gg/kXQbDr4wUf
 - supporting server : https://discord.gg/pulservice
 
-- Collaborators : **kimchaewon_cute**, **no.1_jj**, **bcpulservice**, **1eldorado002**, **onsae091**
+- Collaborators : **kimchaewon_cute**, **no.1_jj**, **bcpulservice**, **1eldorado002**, **onsae091**, **메가짱짱 mega._.7**
 
 ### Sponsor
 - **bcpulservice** - 호스팅 지원
