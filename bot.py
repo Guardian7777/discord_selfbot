@@ -734,7 +734,13 @@ brawler_name_mapping = {
     "CHESTER": "체스터",
     "CORDELIUS": "코델리우스",
     "KIT": "키트",
-    "DRACO": "드라코"
+    "DRACO": "드라코",
+    "BERRY": "베리",
+    "CLANCY": "클랜시",
+    "MOE": "모",
+    "KENJI": "켄지",
+    "JUJU": "주주",
+    "SHADE": "셰이드",
     # 신규 브롤러 추가되면 업데이트함
 }
     
