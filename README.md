@@ -14,7 +14,7 @@
 
 - main Dev : **hm_son**
 - my server : https://discord.gg/kXQbDr4wUf
-- supporting server : https://discord.gg/pulservice
+- supporting server : https://discord.gg/MHbKKJjvUc
 
 - Collaborators : **kimchaewon_cute**, **no.1_jj**, **bcpulservice**, **1eldorado002**, **onsae091**, **메가짱짱 mega._.7**
 
